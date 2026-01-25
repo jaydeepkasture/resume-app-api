@@ -1,0 +1,225 @@
+/* Custom Swagger UI Styling */
+
+/* Main container */
+.swagger-ui {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Topbar customization */
+.swagger-ui .topbar {
+    background-color: #2c3e50;
+    border-bottom: 3px solid #3498db;
+}
+
+.swagger-ui .topbar .download-url-wrapper {
+    display: none;
+}
+
+/* Info section */
+.swagger-ui .info {
+    margin: 30px 0;
+}
+
+.swagger-ui .info .title {
+    color: #2c3e50;
+    font-size: 36px;
+    font-weight: 700;
+}
+
+.swagger-ui .info .description {
+    color: #555;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* Operation blocks */
+.swagger-ui .opblock {
+    border: 1px solid #d4d4d4;
+    border-radius: 4px;
+    margin: 0 0 15px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.swagger-ui .opblock.opblock-post {
+    border-color: #49cc90;
+    background: rgba(73, 204, 144, 0.05);
+}
+
+.swagger-ui .opblock.opblock-post .opblock-summary-method {
+    background: #49cc90;
+}
+
+.swagger-ui .opblock.opblock-get {
+    border-color: #61affe;
+    background: rgba(97, 175, 254, 0.05);
+}
+
+.swagger-ui .opblock.opblock-get .opblock-summary-method {
+    background: #61affe;
+}
+
+/* Authorize button */
+.swagger-ui .btn.authorize {
+    background-color: #3498db;
+    border-color: #3498db;
+    color: white;
+    font-weight: 600;
+}
+
+.swagger-ui .btn.authorize:hover {
+    background-color: #2980b9;
+    border-color: #2980b9;
+}
+
+.swagger-ui .btn.authorize svg {
+    fill: white;
+}
+
+/* Execute button */
+.swagger-ui .btn.execute {
+    background-color: #3498db;
+    border-color: #3498db;
+    color: white;
+    font-weight: 600;
+}
+
+.swagger-ui .btn.execute:hover {
+    background-color: #2980b9;
+    border-color: #2980b9;
+}
+
+/* Response section */
+.swagger-ui .responses-inner {
+    padding: 20px;
+    background-color: #fafafa;
+    border-radius: 4px;
+}
+
+.swagger-ui .response .response-col_status {
+    font-weight: 700;
+}
+
+/* Models section */
+.swagger-ui .model-box {
+    background-color: #fafafa;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+.swagger-ui .model-title {
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+/* Parameter table */
+.swagger-ui table thead tr th,
+.swagger-ui table thead tr td {
+    background-color: #f7f7f7;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+/* Try it out button */
+.swagger-ui .try-out__btn {
+    background-color: transparent;
+    border: 2px solid #3498db;
+    color: #3498db;
+    font-weight: 600;
+}
+
+.swagger-ui .try-out__btn:hover {
+    background-color: #3498db;
+    color: white;
+}
+
+/* Scheme container */
+.swagger-ui .scheme-container {
+    background-color: #fafafa;
+    border-radius: 4px;
+    padding: 15px;
+    margin: 20px 0;
+}
+
+/* Response highlighting */
+.swagger-ui .highlight-code {
+    background-color: #2c3e50;
+}
+
+.swagger-ui .highlight-code .microlight {
+    color: #ecf0f1;
+}
+
+/* Custom scrollbar */
+.swagger-ui ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.swagger-ui ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.swagger-ui ::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+.swagger-ui ::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Success/Error badges */
+.swagger-ui .response-col_status .response-undocumented {
+    color: #999;
+}
+
+/* Lock icon for secured endpoints */
+.swagger-ui .authorization__btn.locked svg {
+    fill: #49cc90;
+}
+
+.swagger-ui .authorization__btn.unlocked svg {
+    fill: #999;
+}
+
+/* Information section styling */
+.swagger-ui .info .base-url {
+    font-size: 14px;
+    font-weight: 600;
+    color: #3498db;
+}
+
+/* Markdown rendering improvements */
+.swagger-ui .markdown p {
+    margin: 10px 0;
+    line-height: 1.6;
+}
+
+.swagger-ui .markdown code {
+    background-color: #f4f4f4;
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: #e74c3c;
+    font-family: 'Courier New', monospace;
+}
+
+.swagger-ui .markdown pre {
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    padding: 15px;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+/* Filter input */
+.swagger-ui .filter-container input {
+    border: 2px solid #d4d4d4;
+    border-radius: 4px;
+    padding: 8px 12px;
+}
+
+.swagger-ui .filter-container input:focus {
+    border-color: #3498db;
+    outline: none;
+}

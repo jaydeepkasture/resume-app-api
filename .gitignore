@@ -1,0 +1,41 @@
+## Visual Studio
+.vs/
+.vscode/
+.idea/
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+*.userprefs
+*.sln.docstates
+
+## Logs
+[Ll]og/
+[Ll]ogs/
+*.log
+
+## Python
+__pycache__/
+*.pyc
+
+## .NET
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## Node.js
+node_modules/
+package-lock.json
+yarn.lock
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+## OS Generated
+.DS_Store
+Thumbs.db
+
+## Test Results
+TestResult/
+TestResults/
+*.VisualState.xml

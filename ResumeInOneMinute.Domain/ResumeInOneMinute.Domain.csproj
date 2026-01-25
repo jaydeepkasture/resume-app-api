@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MongoDB.Bson" Version="2.24.0" />
+    <PackageReference Include="MongoDB.Driver" Version="2.24.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Constance\" />
+    <Folder Include="DTO\" />
+    <Folder Include="ENUM\" />
+    <Folder Include="Interface\" />
+    <Folder Include="Model\" />
+  </ItemGroup>
+
+</Project>

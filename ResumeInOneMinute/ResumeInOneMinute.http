@@ -1,0 +1,6 @@
+@ResumeInOneMinute_HostAddress = http://localhost:5299
+
+GET {{ResumeInOneMinute_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
