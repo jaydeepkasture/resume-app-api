@@ -24,7 +24,14 @@ public class ChatSession
     
     [BsonElement("updated_at")]
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+    [BsonElement("template_id")]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string? TemplateId { get; set; }
     
     [BsonElement("is_active")]
     public bool IsActive { get; set; } = true;
+
+    [BsonElement("is_deleted")]
+    public bool IsDeleted { get; set; } = false;
 }

@@ -31,7 +31,7 @@ public class ResumeController : SuperController
     [HttpPost("chat/create")]
     [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> CreateChatSession()
+    public async Task<IActionResult> CreateChatSession([FromBody] CreateChatSessionDto request)
     {
         var userId = GetUserId();
         if (userId == 0)
@@ -39,54 +39,29 @@ public class ResumeController : SuperController
             return Unauthorized(new { Status = false, Message = "User not authenticated" });
         }
 
-        // Fetch user details for dummy data
+        // Fetch user details for basic info
         var user = await _accountRepository.GetUserByIdAsync(userId);
         if (user == null)
         {
             return Unauthorized(new { Status = false, Message = "User not found" });
         }
 
-        // Create dummy resume data
-        var dummyResume = new ResumeDto
+        // Create empty resume data with just user contact info
+        var initialResume = new ResumeDto
         {
             Name = $"{user.UserProfile?.FirstName} {user.UserProfile?.LastName}".Trim(),
             Email = user.Email,
             PhoneNo = user.UserProfile?.Phone ?? string.Empty,
-            Location = "City, Country",
-            LinkedIn = "linkedin.com/in/username",
-            GitHub = "github.com/username",
-            Summary = "Experienced professional with a proven track record...",
-            Experience = new List<ExperienceDto>
-            {
-                new ExperienceDto
-                {
-                    Company = "Tech Corp",
-                    Position = "Software Engineer",
-                    From = "2020",
-                    To = "Present",
-                    Description = "Developed and maintained web applications..."
-                }
-            },
-            Education = new List<EducationDto>
-            {
-                new EducationDto
-                {
-                    Institution = "University of Technology",
-                    Degree = "Bachelor of Science",
-                    Field = "Computer Science",
-                    Year = "2019"
-                }
-            },
-            Skills = new List<string> { "C#", ".NET", "SQL", "JavaScript" }
+            Location = string.Empty,
+            LinkedIn = string.Empty,
+            GitHub = string.Empty,
+            Summary = string.Empty,
+            Experience = new List<ExperienceDto>(),
+            Education = new List<EducationDto>(),
+            Skills = new List<string>()
         };
 
-        var request = new CreateChatSessionDto
-        {
-            Title = "New Resume Chat",
-            InitialResume = dummyResume
-        };
-
-        var result = await _resumeRepository.CreateChatSessionAsync(userId, request);
+        var result = await _resumeRepository.CreateChatSessionAsync(userId, request, initialResume);
         return result.Status ? Ok(result) : BadRequest(result);
     }
 

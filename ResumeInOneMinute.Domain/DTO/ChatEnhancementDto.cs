@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
+
 namespace ResumeInOneMinute.Domain.DTO;
 
 /// <summary>
@@ -83,15 +84,9 @@ public class ChatEnhancementResponseDto
 public class CreateChatSessionDto
 {
     /// <summary>
-    /// Optional title for the chat
+    /// Template ID if creating from a template
     /// </summary>
-    [StringLength(200)]
-    public string? Title { get; set; }
-    
-    /// <summary>
-    /// Optional initial resume data
-    /// </summary>
-    public ResumeDto? InitialResume { get; set; }
+    public string? TemplateId { get; set; }
 }
 
 /// <summary>
@@ -105,6 +100,7 @@ public class ChatSessionSummaryDto
     public DateTime UpdatedAt { get; set; }
     public int MessageCount { get; set; }
     public bool IsActive { get; set; }
+    public ResumeDto? ResumeData { get; set; }
 }
 
 /// <summary>

@@ -12,7 +12,7 @@ public interface IResumeRepository
     Task<Response<ResumeEnhancementResponseDto>> GetHistoryByIdAsync(long userId, string historyId);
     
     // New chat-based enhancement methods
-    Task<Response<ChatSessionSummaryDto>> CreateChatSessionAsync(long userId, CreateChatSessionDto request);
+    Task<Response<ChatSessionSummaryDto>> CreateChatSessionAsync(long userId, CreateChatSessionDto request, ResumeDto initialResume);
     
     Task<Response<ChatEnhancementResponseDto>> ChatEnhanceAsync(long userId, ChatEnhancementRequestDto request);
     

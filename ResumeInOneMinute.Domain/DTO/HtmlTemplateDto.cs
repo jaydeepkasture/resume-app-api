@@ -4,6 +4,7 @@ public class CreateHtmlTemplateDto
 {
     public string HtmlTemplate { get; set; } = string.Empty;
     public string TemplateName { get; set; } = string.Empty;
+    public int? TemplateTypeId { get; set; }
 }
 
 public class HtmlTemplateResponseDto
@@ -14,14 +15,17 @@ public class HtmlTemplateResponseDto
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public string CreatedBy { get; set; } = string.Empty;
+    public int? TemplateTypeId { get; set; }
 }
 
 public class HtmlTemplateListDto
 {
     public string Id { get; set; } = string.Empty;
+    public string HtmlTemplate { get; set; } = string.Empty;
     public string TemplateName { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
     public string CreatedBy { get; set; } = string.Empty;
+    public int? TemplateTypeId { get; set; }
 }
 
 public class PaginatedHtmlTemplatesDto

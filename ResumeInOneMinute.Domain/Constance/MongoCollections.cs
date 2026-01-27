@@ -29,4 +29,5 @@ public static class MongoCollections
     /// Collection for storing chat sessions for resume enhancement
     /// </summary>
     public const string ChatSessions = "chat_sessions";
+    public const string HtmlTemplates = "html_templates";
 }

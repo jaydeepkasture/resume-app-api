@@ -13,12 +13,14 @@ public class ResumeRepository : IResumeRepository
 {
     private readonly IMongoCollection<ResumeEnhancementHistory> _historyCollection;
     private readonly IMongoCollection<ChatSession> _chatSessionsCollection;
+    private readonly IMongoCollection<HtmlTemplate> _htmlTemplateCollection;
     private readonly IOllamaService _ollamaService;
 
     public ResumeRepository(IMongoDbService mongoDbService, IOllamaService ollamaService)
     {
         _historyCollection = mongoDbService.GetCollection<ResumeEnhancementHistory>(MongoCollections.ResumeEnhancementHistory);
         _chatSessionsCollection = mongoDbService.GetCollection<ChatSession>(MongoCollections.ChatSessions);
+        _htmlTemplateCollection = mongoDbService.GetCollection<HtmlTemplate>(MongoCollections.HtmlTemplates);
         _ollamaService = ollamaService;
         
         // Create indexes for better query performance
@@ -236,24 +238,38 @@ public class ResumeRepository : IResumeRepository
 
     #region Chat-Based Enhancement Methods
 
-    public async Task<Response<ChatSessionSummaryDto>> CreateChatSessionAsync(long userId, CreateChatSessionDto request)
+    public async Task<Response<ChatSessionSummaryDto>> CreateChatSessionAsync(long userId, CreateChatSessionDto request, ResumeDto initialResume)
     {
         try
         {
+            // Determine Chat Title from Template Name
+            string chatTitle = "New Resume Chat";
+            if (!string.IsNullOrWhiteSpace(request.TemplateId))
+            {
+                var template = await _htmlTemplateCollection
+                    .Find(Builders<HtmlTemplate>.Filter.Eq(t => t.Id, request.TemplateId))
+                    .FirstOrDefaultAsync();
+                    
+                if (template != null)
+                {
+                    chatTitle = template.TemplateName;
+                }
+            }
+            
             // Create lightweight chat session (metadata only)
             var chatSession = new ChatSession
             {
                 UserId = userId,
-                Title = request.Title ?? "New Chat",
+                Title = chatTitle,
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                IsActive = true
+                IsActive = true,
+                TemplateId = request.TemplateId
             };
 
             await _chatSessionsCollection.InsertOneAsync(chatSession);
 
             // If initial resume is provided, create the first history entry
-            if (request.InitialResume != null)
+            if (initialResume != null)
             {
                 var initialHistory = new ResumeEnhancementHistory
                 {
@@ -261,7 +277,7 @@ public class ResumeRepository : IResumeRepository
                     ChatId = chatSession.Id,
                     Role = "system",
                     Message = "Initial resume created",
-                    OriginalResume = ConvertToBsonDocument(request.InitialResume),
+                    OriginalResume = ConvertToBsonDocument(initialResume),
                     CreatedAt = DateTime.UtcNow
                 };
                 
@@ -278,8 +294,9 @@ public class ResumeRepository : IResumeRepository
                     Title = chatSession.Title,
                     CreatedAt = chatSession.CreatedAt,
                     UpdatedAt = chatSession.UpdatedAt,
-                    MessageCount = request.InitialResume != null ? 1 : 0,
-                    IsActive = chatSession.IsActive
+                    MessageCount = initialResume != null ? 1 : 0,
+                    IsActive = chatSession.IsActive,
+                    ResumeData = initialResume
                 }
             };
         }
@@ -306,7 +323,8 @@ public class ResumeRepository : IResumeRepository
             {
                 var filter = Builders<ChatSession>.Filter.And(
                     Builders<ChatSession>.Filter.Eq(c => c.Id, request.ChatId),
-                    Builders<ChatSession>.Filter.Eq(c => c.UserId, userId)
+                    Builders<ChatSession>.Filter.Eq(c => c.UserId, userId),
+                    Builders<ChatSession>.Filter.Eq(c => c.IsDeleted, false)
                 );
                 chatSession = await _chatSessionsCollection.Find(filter).FirstOrDefaultAsync();
 
@@ -479,7 +497,10 @@ public class ResumeRepository : IResumeRepository
         try
         {
             var skip = (page - 1) * pageSize;
-            var filter = Builders<ChatSession>.Filter.Eq(c => c.UserId, userId);
+            var filter = Builders<ChatSession>.Filter.And(
+                Builders<ChatSession>.Filter.Eq(c => c.UserId, userId),
+                Builders<ChatSession>.Filter.Eq(c => c.IsDeleted, false)
+            );
             var sort = Builders<ChatSession>.Sort.Descending(c => c.UpdatedAt);
 
             var sessions = await _chatSessionsCollection
@@ -536,7 +557,8 @@ public class ResumeRepository : IResumeRepository
         {
             var filter = Builders<ChatSession>.Filter.And(
                 Builders<ChatSession>.Filter.Eq(c => c.Id, chatId),
-                Builders<ChatSession>.Filter.Eq(c => c.UserId, userId)
+                Builders<ChatSession>.Filter.Eq(c => c.UserId, userId),
+                Builders<ChatSession>.Filter.Eq(c => c.IsDeleted, false)
             );
 
             var session = await _chatSessionsCollection.Find(filter).FirstOrDefaultAsync();
@@ -632,6 +654,24 @@ public class ResumeRepository : IResumeRepository
     {
         try
         {
+            // Verify chat session exists and is not deleted
+            var sessionFilter = Builders<ChatSession>.Filter.And(
+                Builders<ChatSession>.Filter.Eq(c => c.Id, chatId),
+                Builders<ChatSession>.Filter.Eq(c => c.UserId, userId),
+                Builders<ChatSession>.Filter.Eq(c => c.IsDeleted, false)
+            );
+            
+            var sessionExists = await _chatSessionsCollection.Find(sessionFilter).AnyAsync();
+            if (!sessionExists)
+            {
+                return new Response<List<EnhancementHistorySummaryDto>>
+                {
+                    Status = false,
+                    Message = "Chat session not found",
+                    Data = null!
+                };
+            }
+
             var builder = Builders<ResumeEnhancementHistory>.Filter;
             var filter = builder.And(
                 builder.Eq(h => h.ChatId, chatId),
@@ -672,7 +712,8 @@ public class ResumeRepository : IResumeRepository
                 // Use Message field, fallback to UserMessage for legacy data
                 UserMessage = h.Message ?? h.UserMessage ?? "",
                 TemplateId = h.TemplateId,
-                CreatedAt = h.CreatedAt
+                CreatedAt = h.CreatedAt,
+                ResumeData = h.EnhancedResume != null ? ConvertToResumeDto(h.EnhancedResume) : (h.OriginalResume != null ? ConvertToResumeDto(h.OriginalResume) : null)
             }).ToList();
 
             return new Response<List<EnhancementHistorySummaryDto>>
@@ -756,9 +797,14 @@ public class ResumeRepository : IResumeRepository
                 Builders<ChatSession>.Filter.Eq(c => c.UserId, userId)
             );
 
-            var result = await _chatSessionsCollection.DeleteOneAsync(filter);
+            var update = Builders<ChatSession>.Update
+                .Set(c => c.IsDeleted, true)
+                .Set(c => c.IsActive, false)
+                .Set(c => c.UpdatedAt, DateTime.UtcNow);
 
-            if (result.DeletedCount == 0)
+            var result = await _chatSessionsCollection.UpdateOneAsync(filter, update);
+
+            if (result.ModifiedCount == 0)
             {
                 return new Response<bool>
                 {
@@ -792,7 +838,8 @@ public class ResumeRepository : IResumeRepository
         {
             var filter = Builders<ChatSession>.Filter.And(
                 Builders<ChatSession>.Filter.Eq(c => c.Id, chatId),
-                Builders<ChatSession>.Filter.Eq(c => c.UserId, userId)
+                Builders<ChatSession>.Filter.Eq(c => c.UserId, userId),
+                Builders<ChatSession>.Filter.Eq(c => c.IsDeleted, false)
             );
 
             var update = Builders<ChatSession>.Update

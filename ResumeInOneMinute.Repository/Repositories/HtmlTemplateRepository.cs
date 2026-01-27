@@ -29,8 +29,8 @@ public class HtmlTemplateRepository : IHtmlTemplateRepository
                 HtmlTemplateContent = dto.HtmlTemplate,
                 TemplateName = dto.TemplateName,
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                CreatedBy = userId
+                CreatedBy = userId,
+                TemplateTypeId = dto.TemplateTypeId
             };
 
             await _templatesCollection.InsertOneAsync(template);
@@ -50,20 +50,28 @@ public class HtmlTemplateRepository : IHtmlTemplateRepository
     public async Task<PaginatedHtmlTemplatesDto> GetTemplatesAsync(
         int page = 1, 
         int pageSize = 10, 
-        string? search = null)
+        string? search = null,
+        int? templateTypeId = null)
     {
         try
         {
             var filterBuilder = Builders<HtmlTemplate>.Filter;
             var filter = filterBuilder.Empty;
 
+            // Add template type filter if provided
+            if (templateTypeId.HasValue)
+            {
+                filter = filterBuilder.And(filter, filterBuilder.Eq(t => t.TemplateTypeId, templateTypeId.Value));
+            }
+
             // Add search filter if provided
             if (!string.IsNullOrWhiteSpace(search))
             {
-                filter = filterBuilder.Or(
+                var searchFilter = filterBuilder.Or(
                     filterBuilder.Regex(t => t.TemplateName, new MongoDB.Bson.BsonRegularExpression(search, "i")),
                     filterBuilder.Regex(t => t.HtmlTemplateContent, new MongoDB.Bson.BsonRegularExpression(search, "i"))
                 );
+                filter = filterBuilder.And(filter, searchFilter);
             }
 
             // Get total count
@@ -80,9 +88,11 @@ public class HtmlTemplateRepository : IHtmlTemplateRepository
             var templateDtos = templates.Select(t => new HtmlTemplateListDto
             {
                 Id = t.Id,
+                HtmlTemplate = t.HtmlTemplateContent,
                 TemplateName = t.TemplateName,
                 CreatedAt = t.CreatedAt,
-                CreatedBy = t.CreatedBy
+                CreatedBy = t.CreatedBy,
+                TemplateTypeId = t.TemplateTypeId
             }).ToList();
 
             var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
@@ -161,7 +171,8 @@ public class HtmlTemplateRepository : IHtmlTemplateRepository
             TemplateName = template.TemplateName,
             CreatedAt = template.CreatedAt,
             UpdatedAt = template.UpdatedAt,
-            CreatedBy = template.CreatedBy
+            CreatedBy = template.CreatedBy,
+            TemplateTypeId = template.TemplateTypeId
         };
     }
 }

@@ -3,7 +3,7 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using ResumeInOneMinute.Domain.DTO;
 using ResumeInOneMinute.Domain.Interface;
-using ResumeInOneMinute.Domain.Model;
+
 using System.Security.Claims;
 
 namespace ResumeInOneMinute.Controllers.Template;
@@ -80,7 +80,8 @@ public class HtmlTemplateController : ControllerBase
     public async Task<IActionResult> GetTemplates(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10,
-        [FromQuery] string? search = null)
+        [FromQuery] string? search = null,
+        [FromQuery] int? templateTypeId = null)
     {
         try
         {
@@ -102,7 +103,7 @@ public class HtmlTemplateController : ControllerBase
                 });
             }
 
-            var result = await _templateRepository.GetTemplatesAsync(page, pageSize, search);
+            var result = await _templateRepository.GetTemplatesAsync(page, pageSize, search, templateTypeId);
 
             return Ok(new Response<PaginatedHtmlTemplatesDto>
             {

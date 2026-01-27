@@ -3,6 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace ResumeInOneMinute.Domain.Model;
 
+[BsonIgnoreExtraElements]
 public class HtmlTemplate
 {
     [BsonId]
@@ -23,4 +24,7 @@ public class HtmlTemplate
 
     [BsonElement("created_by")]
     public string CreatedBy { get; set; } = string.Empty;
+
+    [BsonElement("template_type_id ")]
+    public int? TemplateTypeId { get; set; }
 }
