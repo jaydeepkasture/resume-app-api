@@ -50,6 +50,7 @@ public class ResumeController : SuperController
         var initialResume = new ResumeDto
         {
             Name = $"{user.UserProfile?.FirstName} {user.UserProfile?.LastName}".Trim(),
+            Role = string.Empty,
             Email = user.Email,
             PhoneNo = user.UserProfile?.Phone ?? string.Empty,
             Location = string.Empty,

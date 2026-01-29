@@ -17,4 +17,11 @@ public interface IOllamaService
         string resumeHtml, 
         ResumeDto resumeData, 
         string enhancementMessage);
+
+    /// <summary>
+    /// Generate a chat title based on the user's first instruction
+    /// </summary>
+    /// <param name="instruction">User's first message/instruction</param>
+    /// <returns>A short, summarized title</returns>
+    Task<string> GenerateChatTitleAsync(string instruction);
 }

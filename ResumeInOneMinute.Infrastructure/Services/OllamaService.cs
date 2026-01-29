@@ -114,12 +114,20 @@ CRITICAL INSTRUCTIONS:
    - You MUST update ""experience"" details to emphasize relevant tasks and achievements.
    - You MAY ADD extra experience entries or bullet points if they are logically consistent with the candidate's profile and necessary for the job description.
    - Ensure the tone matches the industry (e.g., tech, corporate, creative).
-3. If the instruction is in LAYMAN's language (e.g., ""make it better"", ""I want to apply for X""), interpret the intent professionally.
-4. Use action verbs, quantifiable achievements, and industry-standard terminology.
-5. Maintain the EXACT same JSON structure as the input.
-6. Ensure all field names match exactly (case-sensitive): name, phoneno, email, location, linkedin, github, summary, experience, skills, education.
-7. For experience array, use: company, position, from, to, description
-8. For education array, use: degree, field, institution, year
+3. If the user instruction is to ADD content (e.g., ""add education"", ""add experience"", ""add skill""):
+   - You MUST append the new entry to the appropriate array.
+   - If specific details are provided (e.g., ""add university X"", ""add skill Y""), use them.
+   - If details are generic, infer reasonable placeholders or structure based on the context.
+4. If the user instruction is to REMOVE or CONSOLIDATE content (e.g., ""remove duplicate entries"", ""consolidate experience""):
+   - Identify duplicate or overlapping entries (same company, position, or time period).
+   - MERGE them into a single comprehensive entry or remove the redundant ones.
+   - Adjust dates and descriptions to reflect the consolidated timeline.
+5. If the instruction is in LAYMAN's language (e.g., ""make it better"", ""I want to apply for X"", ""add details in edution"", ""remove dupliate""), interpret the intent and typos intelligently.
+6. Use action verbs, quantifiable achievements, and industry-standard terminology.
+7. Maintain the EXACT same JSON structure as the input.
+8. Ensure all field names match exactly (case-sensitive): name, role, phoneno, email, location, linkedin, github, summary, experience, skills, education.
+9. For experience array, use: company, position, from, to, description
+10. For education array, use: degree, field, institution, year
 
 OUTPUT FORMAT:
 CRITICAL: Return ONLY the raw JSON object. Do NOT wrap it in markdown code blocks.
@@ -135,6 +143,7 @@ Return ONLY a valid JSON object with the EXACT structure shown below.
 
 {{
   ""name"": ""string"",
+  ""role"": ""string"",
   ""phoneno"": ""string"",
   ""email"": ""string"",
   ""location"": ""string"",
@@ -247,11 +256,80 @@ Now enhance the resume:";
         // Call the JSON-only enhancement method
         // This ensures stricter adherence to the data structure and avoids HTML parsing issues
         var enhancedResume = await EnhanceResumeAsync(resumeData, enhancementMessage);
-        
+                
         // Return original HTML (unchanged) and new JSON
         // The frontend should ideally re-render the HTML based on the new JSON if needed,
         // or the user accepts that only the data model is updated.
         return (resumeHtml, enhancedResume);
+    }
+
+    public async Task<string> GenerateChatTitleAsync(string instruction)
+    {
+        try
+        {
+            var prompt = $@"Generate a short, concise title (max 5-7 words) for a chat session based on this user instruction: ""{instruction}"".
+            
+            RULES:
+            1. Return ONLY the title text.
+            2. Do NOT use quotes.
+            3. Do NOT include any prefixes like ""Title:"".
+            4. Keep it professional and descriptive.
+            5. Max length 400 characters.
+
+            Title:";
+            
+            _logger.LogInformation("Generating chat title via Ollama");
+            
+            var ollamaRequest = new
+            {
+                model = _model,
+                prompt = prompt,
+                stream = false,
+                options = new
+                {
+                    temperature = 0.7, // Higher temperature for creativity
+                    top_p = 0.9
+                }
+            };
+
+            var jsonContent = JsonSerializer.Serialize(ollamaRequest);
+            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync($"{_ollamaUrl}/api/generate", content);
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                 // Fallback if API fails
+                 return instruction.Length > 30 ? instruction.Substring(0, 27) + "..." : instruction;
+            }
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var ollamaResponse = JsonSerializer.Deserialize<OllamaResponse>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            if (string.IsNullOrWhiteSpace(ollamaResponse?.Response))
+            {
+                return instruction.Length > 30 ? instruction.Substring(0, 27) + "..." : instruction;
+            }
+
+            var title = ollamaResponse.Response.Trim();
+            
+            // Cleanup quotes if Ollama added them
+            title = title.Trim('"').Trim('\'');
+            
+            // Enforce max length
+            if (title.Length > 400)
+            {
+                title = title.Substring(0, 397) + "...";
+            }
+            
+            return title;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating chat title");
+            // Fallback
+            return instruction.Length > 30 ? instruction.Substring(0, 27) + "..." : instruction;
+        }
     }
 
     private class OllamaResponse

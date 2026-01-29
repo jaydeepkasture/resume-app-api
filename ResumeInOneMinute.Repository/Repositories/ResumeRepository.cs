@@ -449,11 +449,15 @@ public class ResumeRepository : IResumeRepository
             // Update chat session metadata only
             chatSession.UpdatedAt = DateTime.UtcNow;
             
-            // Auto-generate title from first message if still "New Chat"
-            var messageCount = chatHistory.Count + 1; // +1 for the entry we just added
-            if (chatSession.Title == "New Chat" && messageCount == 1)
+            // Auto-generate title from first message
+            // We update the title if it's the first active user interaction (messageCount <= 2)
+            // This covers: 
+            // 1. Fresh chat (0 history + 1 new = 1) 
+            // 2. Chat with initial Resume (1 history + 1 new = 2)
+            var messageCount = chatHistory.Count + 1; 
+            if (messageCount <= 2 && !string.IsNullOrWhiteSpace(request.Message))
             {
-                chatSession.Title = GenerateChatTitle(request.Message);
+                chatSession.Title = await _ollamaService.GenerateChatTitleAsync(request.Message);
             }
 
             var update = Builders<ChatSession>.Update
@@ -936,14 +940,7 @@ public class ResumeRepository : IResumeRepository
         return "I'm ready to help you enhance your resume. Please provide your resume data or ask me any questions about resume writing!";
     }
 
-    private string GenerateChatTitle(string firstMessage)
-    {
-        // Generate a title from the first message (max 50 chars)
-        var title = firstMessage.Length > 50 
-            ? firstMessage.Substring(0, 47) + "..." 
-            : firstMessage;
-        return title;
-    }
+
 
     #endregion
 
