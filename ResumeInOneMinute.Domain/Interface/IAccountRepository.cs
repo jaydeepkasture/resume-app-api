@@ -12,4 +12,6 @@ public interface IAccountRepository
     Task<bool> EmailExistsAsync(string email);
     Task<Response<AuthResponseDto>> RefreshTokenAsync(RefreshTokenDto tokenDto);
     Task<Response<string>> ForgotPasswordAsync(string email);
+    Task<Response<string>> LogoutAsync(long userId);
+    Task<Response<UserDto>> UpdateProfileAsync(long userId, ProfileUpdateDto profileUpdateDto);
 }

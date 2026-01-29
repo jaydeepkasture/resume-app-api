@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Asp.Versioning;
 using ResumeInOneMinute.Domain.DTO;
 using ResumeInOneMinute.Domain.Interface;
@@ -40,9 +41,6 @@ public class AccountController : SuperController
         // Set Refresh Token in Cookie (Encrypted)
         SetRefreshTokenCookie(result.Data.RefreshToken);
 
-        // Remove Refresh Token from Response Body
-        result.Data.RefreshToken = string.Empty;
-
         return Ok(result);
     }
 
@@ -66,9 +64,6 @@ public class AccountController : SuperController
 
         // Set Refresh Token in Cookie (Encrypted)
         SetRefreshTokenCookie(result.Data.RefreshToken);
-
-        // Remove Refresh Token from Response Body
-        result.Data.RefreshToken = string.Empty;
 
         return Ok(result);
     }
@@ -115,9 +110,6 @@ public class AccountController : SuperController
         // Set New Refresh Token in Cookie (Encrypted)
         SetRefreshTokenCookie(result.Data.RefreshToken);
 
-        // Remove Refresh Token from Response Body
-        result.Data.RefreshToken = string.Empty;
-
         return Ok(result);
     }
 
@@ -141,6 +133,59 @@ public class AccountController : SuperController
         return Ok(result);
     }
 
+    [Authorize]
+    [HttpPost("logout")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Logout()
+    {
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim.Value, out long userId))
+        {
+            return Unauthorized(new { Status = false, Message = "Invalid user identity" });
+        }
+
+        var result = await _accountRepository.LogoutAsync(userId);
+        
+        // Clear Refresh Token Cookie
+        Response.Cookies.Delete("refreshToken");
+
+        if (!result.Status)
+        {
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+    [Authorize]
+    [HttpPut("profile")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> UpdateProfile([FromBody] ProfileUpdateDto profileUpdateDto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(new { Status = false, Message = "Validation failed", Data = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
+        }
+
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !long.TryParse(userIdClaim.Value, out long userId))
+        {
+            return Unauthorized(new { Status = false, Message = "Invalid user identity" });
+        }
+
+        var result = await _accountRepository.UpdateProfileAsync(userId, profileUpdateDto);
+
+        if (!result.Status)
+        {
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
     private void SetRefreshTokenCookie(string refreshToken)
     {
         var cookieOptions = new CookieOptions
@@ -148,7 +193,7 @@ public class AccountController : SuperController
             HttpOnly = true,
             Secure = true, // Ensure this is true for production (and usually localhost too)
             SameSite = SameSiteMode.Strict,
-            Path = "/api/account/refresh-token", // Lock to specific path
+            Path = "/", // Allow cookie to be sent to all paths (needed for versioned API)
             Expires = DateTime.UtcNow.AddDays(7)
         };
 

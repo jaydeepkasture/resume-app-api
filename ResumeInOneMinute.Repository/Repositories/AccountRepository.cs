@@ -375,6 +375,98 @@ public class AccountRepository : BaseRepository, IAccountRepository
         }
     }
 
+    public async Task<Response<string>> LogoutAsync(long userId)
+    {
+        try
+        {
+            using (var context = CreateDbContext())
+            {
+                var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+                if (user == null)
+                {
+                    return new Response<string> { Status = false, Message = "User not found" };
+                }
+
+                // Clear Refresh Token
+                user.RefreshTokenHash = null;
+                user.RefreshTokenSalt = null;
+                user.RefreshTokenExpiryTime = null;
+
+                await context.SaveChangesAsync();
+
+                return new Response<string>
+                {
+                    Status = true,
+                    Message = "Logout successful"
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            return new Response<string> { Status = false, Message = $"Logout failed: {ex.Message}" };
+        }
+    }
+
+    public async Task<Response<UserDto>> UpdateProfileAsync(long userId, ProfileUpdateDto profileUpdateDto)
+    {
+        try
+        {
+            using (var context = CreateDbContext())
+            {
+                var user = await context.Users
+                    .Include(u => u.UserProfile)
+                    .FirstOrDefaultAsync(u => u.UserId == userId);
+
+                if (user == null)
+                {
+                    return new Response<UserDto> { Status = false, Message = "User not found", Data = null! };
+                }
+
+                // Update Profile
+                if (user.UserProfile == null)
+                {
+                    // Should not happen if registered correctly, but handle just in case
+                    user.UserProfile = new UserProfile
+                    {
+                        UserId = userId,
+                        GlobalUserProfileId = Guid.NewGuid()
+                    };
+                    context.UserProfiles.Add(user.UserProfile);
+                }
+
+                user.UserProfile.FirstName = profileUpdateDto.FirstName.Trim();
+                user.UserProfile.LastName = profileUpdateDto.LastName.Trim();
+                user.UserProfile.Phone = profileUpdateDto.PhoneNumber?.Trim();
+                user.UserProfile.CountryCode = profileUpdateDto.CountryCode?.Trim();
+
+                await context.SaveChangesAsync();
+
+                var userDto = new UserDto
+                {
+                    UserId = user.UserId,
+                    GlobalUserId = user.GlobalUserId,
+                    Email = user.Email,
+                    FirstName = user.UserProfile.FirstName,
+                    LastName = user.UserProfile.LastName,
+                    PhoneNumber = user.UserProfile.Phone,
+                    IsActive = user.IsActive,
+                    CreatedAt = user.CreatedAt
+                };
+
+                return new Response<UserDto>
+                {
+                    Status = true,
+                    Message = "Profile updated successfully",
+                    Data = userDto
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            return new Response<UserDto> { Status = false, Message = $"Profile update failed: {ex.Message}", Data = null! };
+        }
+    }
+
     #region Private Helper Methods
 
     private void CreateHash(string text, out byte[] hash, out byte[] salt)
