@@ -68,6 +68,30 @@ public class AccountController : SuperController
         return Ok(result);
     }
 
+    [HttpPost("google/verify-token")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GoogleTokenVerify([FromBody] GoogleLoginDto googleLoginDto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(new { Status = false, Message = "Validation failed", Data = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
+        }
+
+        var result = await _accountRepository.GoogleLoginAsync(googleLoginDto);
+
+        if (!result.Status)
+        {
+            return BadRequest(result);
+        }
+
+        // Set Refresh Token in Cookie (Encrypted)
+        SetRefreshTokenCookie(result.Data.RefreshToken);
+
+        return Ok(result);
+    }
+
     [HttpGet("refresh-token")]
     [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]

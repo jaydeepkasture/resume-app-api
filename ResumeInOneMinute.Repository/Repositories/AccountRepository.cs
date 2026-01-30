@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Google.Apis.Auth;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using ResumeInOneMinute.Domain.DTO;
@@ -464,6 +465,137 @@ public class AccountRepository : BaseRepository, IAccountRepository
         catch (Exception ex)
         {
             return new Response<UserDto> { Status = false, Message = $"Profile update failed: {ex.Message}", Data = null! };
+        }
+    }
+
+    public async Task<Response<AuthResponseDto>> GoogleLoginAsync(GoogleLoginDto googleLoginDto)
+    {
+        try
+        {
+            var clientId = Configuration["GoogleSettings:ClientId"];
+            var validationSettings = new GoogleJsonWebSignature.ValidationSettings
+            {
+                Audience = new[] { clientId }
+            };
+
+            var payload = await GoogleJsonWebSignature.ValidateAsync(googleLoginDto.Token, validationSettings);
+
+            using (var context = CreateDbContext())
+            {
+                var email = payload.Email.Trim().ToLower();
+                var user = await context.Users
+                    .Include(u => u.UserProfile)
+                    .FirstOrDefaultAsync(u => u.Email == email);
+
+                string refreshToken = GenerateRefreshToken();
+                CreateHash(refreshToken, out byte[] refreshTokenHash, out byte[] refreshTokenSalt);
+
+                if (user == null)
+                {
+                    using (var transaction = await context.Database.BeginTransactionAsync())
+                    {
+                        try
+                        {
+                            var randomPassword = Guid.NewGuid().ToString();
+                            CreateHash(randomPassword, out byte[] passwordHash, out byte[] passwordSalt);
+
+                            user = new User
+                            {
+                                Email = email,
+                                PasswordHash = passwordHash,
+                                PasswordSalt = passwordSalt,
+                                IsActive = true,
+                                RefreshTokenHash = refreshTokenHash,
+                                RefreshTokenSalt = refreshTokenSalt,
+                                RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7),
+                                CreatedAt = DateTime.UtcNow
+                            };
+
+                            context.Users.Add(user);
+                            await context.SaveChangesAsync();
+
+                            var userProfile = new UserProfile
+                            {
+                                UserId = user.UserId,
+                                FirstName = payload.GivenName ?? "Unknown",
+                                LastName = payload.FamilyName ?? "User",
+                                CreatedAt = DateTime.UtcNow
+                            };
+
+                            context.UserProfiles.Add(userProfile);
+                            await context.SaveChangesAsync();
+
+                            user.UserProfile = userProfile;
+
+                            await transaction.CommitAsync();
+                        }
+                        catch
+                        {
+                            await transaction.RollbackAsync();
+                            throw;
+                        }
+                    }
+                }
+                else
+                {
+                    if (!user.IsActive)
+                    {
+                        return new Response<AuthResponseDto>
+                        {
+                            Status = false,
+                            Message = "Account is inactive. Please contact support.",
+                            Data = null!
+                        };
+                    }
+
+                    user.RefreshTokenHash = refreshTokenHash;
+                    user.RefreshTokenSalt = refreshTokenSalt;
+                    user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+                    user.UpdatedAt = DateTime.UtcNow;
+
+                    await context.SaveChangesAsync();
+                }
+
+                var token = GenerateJwtToken(user);
+                var encryptedToken = _encryptionHelper.EncryptPersistent(token);
+
+                var userDto = new UserDto
+                {
+                    UserId = user.UserId,
+                    GlobalUserId = user.GlobalUserId,
+                    Email = user.Email,
+                    FirstName = user.UserProfile?.FirstName,
+                    LastName = user.UserProfile?.LastName,
+                    PhoneNumber = user.UserProfile?.Phone,
+                    IsActive = user.IsActive,
+                    CreatedAt = user.CreatedAt
+                };
+
+                return new Response<AuthResponseDto>
+                {
+                    Status = true,
+                    Message = "Login successful",
+                    Data = new AuthResponseDto
+                    {
+                        Token = encryptedToken,
+                        RefreshToken = refreshToken,
+                        User = userDto
+                    }
+                };
+            }
+        }
+        catch (InvalidJwtException)
+        {
+            return new Response<AuthResponseDto> { Status = false, Message = "Invalid Google Token" };
+        }
+        catch (Exception ex)
+        {
+            return new Response<AuthResponseDto>
+            {
+                Status = false,
+                Message = $"Google login failed: {ex.Message}",
+                Data = null!
+            };
         }
     }
 
