@@ -34,4 +34,7 @@ public class ChatSession
 
     [BsonElement("is_deleted")]
     public bool IsDeleted { get; set; } = false;
+
+    [BsonElement("is_title_updated")]
+    public bool IsTitleUpdated { get; set; } = false;
 }

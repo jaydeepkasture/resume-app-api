@@ -263,7 +263,8 @@ public class ResumeRepository : IResumeRepository
                 Title = chatTitle,
                 CreatedAt = DateTime.UtcNow,
                 IsActive = true,
-                TemplateId = request.TemplateId
+                TemplateId = request.TemplateId,
+                IsTitleUpdated = false
             };
 
             await _chatSessionsCollection.InsertOneAsync(chatSession);
@@ -293,7 +294,6 @@ public class ResumeRepository : IResumeRepository
                     ChatId = chatSession.Id,
                     Title = chatSession.Title,
                     CreatedAt = chatSession.CreatedAt,
-                    UpdatedAt = chatSession.UpdatedAt,
                     MessageCount = initialResume != null ? 1 : 0,
                     IsActive = chatSession.IsActive,
                     ResumeData = initialResume
@@ -346,8 +346,8 @@ public class ResumeRepository : IResumeRepository
                     UserId = userId,
                     Title = "New Chat",
                     CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
-                    IsActive = true
+                    IsActive = true,
+                    IsTitleUpdated = false
                 };
                 await _chatSessionsCollection.InsertOneAsync(chatSession);
             }
@@ -449,20 +449,17 @@ public class ResumeRepository : IResumeRepository
             // Update chat session metadata only
             chatSession.UpdatedAt = DateTime.UtcNow;
             
-            // Auto-generate title from first message
-            // We update the title if it's the first active user interaction (messageCount <= 2)
-            // This covers: 
-            // 1. Fresh chat (0 history + 1 new = 1) 
-            // 2. Chat with initial Resume (1 history + 1 new = 2)
-            var messageCount = chatHistory.Count + 1; 
-            if (messageCount <= 2 && !string.IsNullOrWhiteSpace(request.Message))
+            // Auto-generate title if not yet updated and message is present
+            if (!chatSession.IsTitleUpdated && !string.IsNullOrWhiteSpace(request.Message))
             {
                 chatSession.Title = await _ollamaService.GenerateChatTitleAsync(request.Message);
+                chatSession.IsTitleUpdated = true;
             }
 
             var update = Builders<ChatSession>.Update
                 .Set(c => c.UpdatedAt, chatSession.UpdatedAt)
-                .Set(c => c.Title, chatSession.Title);
+                .Set(c => c.Title, chatSession.Title)
+                .Set(c => c.IsTitleUpdated, chatSession.IsTitleUpdated);
 
             await _chatSessionsCollection.UpdateOneAsync(
                 c => c.Id == chatSession.Id,
@@ -476,6 +473,7 @@ public class ResumeRepository : IResumeRepository
                 Data = new ChatEnhancementResponseDto
                 {
                     ChatId = chatSession.Id,
+                    Title = chatSession.Title,
                     UserMessage = request.Message,
                     AssistantMessage = aiResponse,
                     CurrentResume = enhancedResume ?? originalResume,
@@ -588,42 +586,19 @@ public class ResumeRepository : IResumeRepository
                 .SortBy(h => h.CreatedAt)
                 .ToListAsync();
 
-            // Convert history entries to chat messages (each entry becomes 2 messages: user + assistant)
-            var messages = new List<ChatMessageDto>();
-            foreach (var entry in historyEntries)
-            {
-                // Add user message
-                messages.Add(new ChatMessageDto
-                {
-                    Id = entry.Id + "_user",
-                    Role = "user",
-                    Content = entry.Message ?? entry.UserMessage ?? "",
-                    ResumeData = entry.OriginalResume != null ? ConvertToResumeDto(entry.OriginalResume) : null,
-                    Timestamp = entry.CreatedAt,
-                    ProcessingTimeMs = null
-                });
-                
-                // Add assistant message
-                messages.Add(new ChatMessageDto
-                {
-                    Id = entry.Id + "_assistant",
-                    Role = "assistant",
-                    Content = entry.AssistantMessage ?? "",
-                    ResumeData = entry.EnhancedResume != null ? ConvertToResumeDto(entry.EnhancedResume) : null,
-                    Timestamp = entry.CreatedAt,
-                    ProcessingTimeMs = entry.ProcessingTimeMs
-                });
-            }
+            
 
-            // Get current resume from latest enhanced resume
+            // Get current resume from latest enhanced or original resume
             var latestResumeEntry = historyEntries
-                .Where(h => h.EnhancedResume != null)
+                .Where(h => h.EnhancedResume != null || h.OriginalResume != null)
                 .OrderByDescending(h => h.CreatedAt)
                 .FirstOrDefault();
             
             var currentResume = latestResumeEntry?.EnhancedResume != null 
                 ? ConvertToResumeDto(latestResumeEntry.EnhancedResume) 
-                : null;
+                : (latestResumeEntry?.OriginalResume != null 
+                    ? ConvertToResumeDto(latestResumeEntry.OriginalResume) 
+                    : null);
 
             var detail = new ChatSessionDetailDto
             {
@@ -631,9 +606,9 @@ public class ResumeRepository : IResumeRepository
                 Title = session.Title,
                 CreatedAt = session.CreatedAt,
                 UpdatedAt = session.UpdatedAt,
-                Messages = messages,
-                CurrentResume = currentResume,
-                IsActive = session.IsActive
+                ResumeData = currentResume,
+                IsActive = session.IsActive,
+                TemplateId = session.TemplateId
             };
 
             return new Response<ChatSessionDetailDto>

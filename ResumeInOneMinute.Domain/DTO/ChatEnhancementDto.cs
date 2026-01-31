@@ -46,6 +46,11 @@ public class ChatEnhancementResponseDto
     /// Chat session ID
     /// </summary>
     public string ChatId { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Updated Chat Title
+    /// </summary>
+    public string? Title { get; set; }
     
     /// <summary>
     /// User's message
@@ -112,9 +117,9 @@ public class ChatSessionDetailDto
     public string Title { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
-    public List<ChatMessageDto> Messages { get; set; } = new();
-    public ResumeDto? CurrentResume { get; set; }
+    public ResumeDto? ResumeData { get; set; }
     public bool IsActive { get; set; }
+    public string? TemplateId { get; set; }
 }
 
 /// <summary>
