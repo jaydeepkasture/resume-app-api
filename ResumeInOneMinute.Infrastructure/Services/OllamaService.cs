@@ -106,6 +106,11 @@ CURRENT RESUME (JSON):
 ENHANCEMENT INSTRUCTION:
 {enhancementInstruction}
 
+⚠️ CRITICAL WARNING ⚠️
+You MUST make changes to the resume based on the enhancement instruction above.
+Returning the exact same resume without any modifications is NOT acceptable.
+If the instruction asks to update, add, or modify something, you MUST do it.
+
 CRITICAL INSTRUCTIONS:
 1. ANALYZE the enhancement instruction carefully. It may be a specific request (e.g., ""fix grammar"") or a JOB DESCRIPTION to tailor the resume for.
 2. If a JOB DESCRIPTION is provided:
@@ -114,20 +119,45 @@ CRITICAL INSTRUCTIONS:
    - You MUST update ""experience"" details to emphasize relevant tasks and achievements.
    - You MAY ADD extra experience entries or bullet points if they are logically consistent with the candidate's profile and necessary for the job description.
    - Ensure the tone matches the industry (e.g., tech, corporate, creative).
-3. If the user instruction is to ADD content (e.g., ""add education"", ""add experience"", ""add skill""):
+3. If the user instruction is to UPDATE/MODIFY content (e.g., ""update OSP Labs details"", ""add microservices to NSR experience"", ""enhance company X description""):
+   - IDENTIFY the specific company/entry mentioned in the instruction by matching the company name (case-insensitive, partial match allowed).
+   - LOCATE that entry in the experience/education array.
+   - UPDATE the relevant fields (description, position, dates, etc.) based on the instruction.
+   - If adding new details to a description, APPEND or INTEGRATE them naturally into the existing description.
+   - PRESERVE all other fields of that entry unless explicitly instructed to change them.
+   - DO NOT create a duplicate entry - modify the existing one.
+4. If the user instruction is to ADD content (e.g., ""add education"", ""add experience"", ""add skill""):
    - You MUST append the new entry to the appropriate array.
    - If specific details are provided (e.g., ""add university X"", ""add skill Y""), use them.
    - If details are generic, infer reasonable placeholders or structure based on the context.
-4. If the user instruction is to REMOVE or CONSOLIDATE content (e.g., ""remove duplicate entries"", ""consolidate experience""):
+5. If the user instruction is to REMOVE or CONSOLIDATE content (e.g., ""remove duplicate entries"", ""consolidate experience""):
    - Identify duplicate or overlapping entries (same company, position, or time period).
    - MERGE them into a single comprehensive entry or remove the redundant ones.
    - Adjust dates and descriptions to reflect the consolidated timeline.
-5. If the instruction is in LAYMAN's language (e.g., ""make it better"", ""I want to apply for X"", ""add details in edution"", ""remove dupliate""), interpret the intent and typos intelligently.
-6. Use action verbs, quantifiable achievements, and industry-standard terminology.
-7. Maintain the EXACT same JSON structure as the input.
-8. Ensure all field names match exactly (case-sensitive): name, role, phoneno, email, location, linkedin, github, summary, experience, skills, education.
-9. For experience array, use: company, position, from, to, description
-10. For education array, use: degree, field, institution, year
+6. If the instruction is in LAYMAN's language (e.g., ""make it better"", ""I want to apply for X"", ""add details in edution"", ""remove dupliate""), interpret the intent and typos intelligently.
+7. Use action verbs, quantifiable achievements, and industry-standard terminology.
+8. Maintain the EXACT same JSON structure as the input.
+9. Ensure all field names match exactly (case-sensitive): name, role, phoneno, email, location, linkedin, github, summary, experience, skills, education.
+10. For experience array, use: company, position, from, to, description
+11. For education array, use: degree, field, institution, year
+
+EXAMPLES OF UPDATE OPERATIONS:
+
+Example 1 - Updating a specific company's description:
+User says: ""Update OSP Labs details by adding details about .NET microservices""
+Action: Find the experience entry where company contains ""OSP Labs"" (case-insensitive match).
+Update the description field by adding information about .NET microservices to the existing description.
+Result: The OSP Labs entry's description should now include microservices-related achievements.
+
+Example 2 - Adding skills to a specific role:
+User says: ""Add Angular and TypeScript to my NSR experience""
+Action: Find the experience entry where company is ""NSR"".
+Update the description to mention Angular and TypeScript work.
+Optionally add ""Angular"" and ""TypeScript"" to the skills array if not already present.
+
+Example 3 - Enhancing a specific company's achievements:
+User says: ""Make the OSP Labs experience more impressive""
+Action: Find the OSP Labs entry and rewrite the description with stronger action verbs, quantifiable metrics, and more impactful language.
 
 OUTPUT FORMAT:
 CRITICAL: Return ONLY the raw JSON object. Do NOT wrap it in markdown code blocks.
