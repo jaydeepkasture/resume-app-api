@@ -27,4 +27,7 @@ public class HtmlTemplate
 
     [BsonElement("template_type_id ")]
     public int? TemplateTypeId { get; set; }
+
+    [BsonElement("is_active")]
+    public bool IsActive { get; set; } = true;
 }

@@ -30,7 +30,8 @@ public class HtmlTemplateRepository : IHtmlTemplateRepository
                 TemplateName = dto.TemplateName,
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = userId,
-                TemplateTypeId = dto.TemplateTypeId
+                TemplateTypeId = dto.TemplateTypeId,
+                IsActive = true
             };
 
             await _templatesCollection.InsertOneAsync(template);
@@ -56,7 +57,7 @@ public class HtmlTemplateRepository : IHtmlTemplateRepository
         try
         {
             var filterBuilder = Builders<HtmlTemplate>.Filter;
-            var filter = filterBuilder.Empty;
+            var filter = filterBuilder.Eq(x=>x.IsActive,true);
 
             // Add template type filter if provided
             if (templateTypeId.HasValue)

@@ -1,0 +1,6 @@
+{
+  "GroqSettings": {
+    "ApiKey": "your-groq-api-key-here",
+    "BaseUrl": "https://api.groq.com/openai/v1"
+  }
+}

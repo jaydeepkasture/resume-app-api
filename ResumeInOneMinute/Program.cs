@@ -55,7 +55,8 @@ builder.Services.AddSingleton<IMongoDbService, ResumeInOneMinute.Infrastructure.
 // Register Common Services
 builder.Services.AddSingleton<ResumeInOneMinute.Infrastructure.CommonServices.EncryptionHelper>();
 builder.Services.AddScoped<IEmailService, ResumeInOneMinute.Infrastructure.Services.EmailService>();
-builder.Services.AddScoped<IOllamaService, ResumeInOneMinute.Infrastructure.Services.OllamaService>();
+// Register Composite AI Service (Groq with Ollama fallback)
+builder.Services.AddScoped<IOllamaService, ResumeInOneMinute.Infrastructure.Services.CompositeAIService>();
 
 // Register Repositories (DbContext is created manually in repository)
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
