@@ -811,6 +811,71 @@ public class ResumeRepository : IResumeRepository
         }
     }
 
+    public async Task<Response<bool>> SaveResumeAsync(long userId, string chatId, ResumeDto resume, string templateId)
+    {
+        try
+        {
+            var filter = Builders<ResumeEnhancementHistory>.Filter.And(
+                Builders<ResumeEnhancementHistory>.Filter.Eq(h => h.UserId, userId),
+                Builders<ResumeEnhancementHistory>.Filter.Eq(h => h.ChatId, chatId)
+            );
+            var sort = Builders<ResumeEnhancementHistory>.Sort.Descending(h => h.CreatedAt);
+            
+            var latestHistory = await _historyCollection.Find(filter).Sort(sort).FirstOrDefaultAsync();
+            
+            var incomingBson = ConvertToBsonDocument(resume);
+            
+            // Check if we should skip saving
+            // Condition: Latest record has message "save" AND EnhancedResume content is identical
+            if (latestHistory != null && 
+                string.Equals(latestHistory.Message, "save", StringComparison.OrdinalIgnoreCase))
+            {
+                // Compare BsonDocuments
+                // Note: Direct comparison of BsonDocuments works for equality if structure is same
+                if (latestHistory.EnhancedResume != null && latestHistory.EnhancedResume.Equals(incomingBson))
+                {
+                    return new Response<bool>
+                    {
+                        Status = true,
+                        Message = "Resume state already saved (no changes)",
+                        Data = true
+                    };
+                }
+            }
+            
+            // Insert new record
+            var newHistory = new ResumeEnhancementHistory
+            {
+                UserId = userId,
+                ChatId = chatId,
+                Message = "save",
+                EnhancedResume = incomingBson,
+                TemplateId = templateId,
+                CreatedAt = DateTime.UtcNow,
+                // OriginalResume is not set as this is a snapshot save
+                // processing time is negligible
+            };
+            
+            await _historyCollection.InsertOneAsync(newHistory);
+            
+            return new Response<bool>
+            {
+                Status = true,
+                Message = "Resume saved successfully",
+                Data = true
+            };
+        }
+        catch (Exception ex)
+        {
+            return new Response<bool>
+            {
+                Status = false,
+                Message = $"Failed to save resume: {ex.Message}",
+                Data = false
+            };
+        }
+    }
+
     public async Task<Response<ChatSessionSummaryDto>> UpdateChatTitleAsync(long userId, string chatId, string newTitle)
     {
         try

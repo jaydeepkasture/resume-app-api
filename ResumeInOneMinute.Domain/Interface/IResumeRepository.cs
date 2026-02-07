@@ -27,5 +27,7 @@ public interface IResumeRepository
     Task<Response<List<EnhancementHistorySummaryDto>>> GetChatHistorySummaryAsync(long userId, string chatId, int page = 1, int pageSize = 20, string sortOrder = "desc", string search = "", string? templateId = null);
     
     Task<Response<EnhancementHistoryDetailDto>> GetEnhancementHistoryDetailAsync(long userId, string historyId);
+    
+    Task<Response<bool>> SaveResumeAsync(long userId, string chatId, ResumeDto resume, string templateId);
 }
 

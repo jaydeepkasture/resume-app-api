@@ -207,6 +207,39 @@ public class ResumeController : SuperController
         return result.Status ? Ok(result) : NotFound(result);
     }
 
+    /// <summary>
+    /// Save current resume state
+    /// </summary>
+    [HttpPut("save")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Save([FromBody] ResumeDto dto, [FromQuery] string chatId, [FromQuery] string templateId)
+    {
+        var userId = GetUserId();
+        if (userId == 0)
+        {
+            return Unauthorized(new { Status = false, Message = "User not authenticated" });
+        }
+
+        if (string.IsNullOrWhiteSpace(chatId) || string.IsNullOrWhiteSpace(templateId))
+        {
+             return BadRequest(new { Status = false, Message = "ChatId and TemplateId are required" });
+        }
+
+        if (!ModelState.IsValid)
+        {
+             return BadRequest(new 
+             { 
+                 Status = false, 
+                 Message = "Validation failed", 
+                 Data = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) 
+             });
+        }
+
+        var result = await _resumeRepository.SaveResumeAsync(userId, chatId, dto, templateId);
+        return result.Status ? Ok(result) : BadRequest(result);
+    }
+
     #endregion
 
     #region Legacy Enhancement (Backward Compatibility)
