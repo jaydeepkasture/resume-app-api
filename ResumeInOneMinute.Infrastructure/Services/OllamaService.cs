@@ -36,7 +36,7 @@ public class OllamaService : IOllamaService
             var ollamaRequest = new
             {
                 model = _model,
-                prompt = prompt,
+                prompt,
                 stream = false,
                 options = new
                 {
@@ -140,6 +140,8 @@ CRITICAL INSTRUCTIONS:
 9. Ensure all field names match exactly (case-sensitive): name, role, phoneno, email, location, linkedin, github, summary, experience, skills, education.
 10. For experience array, use: company, position, from, to, description
 11. For education array, use: degree, field, institution, year
+12. EXPERIENCE ORDER: You MUST maintain strict reverse chronological order for the 'experience' array. The most recent or current job MUST be at index 0. The oldest (first) job MUST be at the last index.
+13. EDUCATION YEAR LOGIC: If the job description requires specific education and you are adding or inferring graduation years, set the graduation year to be the same as the start year of the candidate's very first job (the oldest entry in their experience history).
 
 EXAMPLES OF UPDATE OPERATIONS:
 
@@ -313,7 +315,7 @@ Now enhance the resume:";
             var ollamaRequest = new
             {
                 model = _model,
-                prompt = prompt,
+                prompt,
                 stream = false,
                 options = new
                 {
