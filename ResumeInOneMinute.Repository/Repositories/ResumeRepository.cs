@@ -276,6 +276,21 @@ public class ResumeRepository : IResumeRepository
 
             await _chatSessionsCollection.InsertOneAsync(chatSession);
 
+            // Fetch master resume if exists to merge with basic info
+            var masterResume = await _resumeCollection.Find(r => r.UserId == userId).FirstOrDefaultAsync();
+            if (masterResume?.ResumeData != null)
+            {
+                var mergedResume = masterResume.ResumeData;
+                // Override with current account info from controller
+                mergedResume.Name = initialResume.Name;
+                mergedResume.Email = initialResume.Email;
+                if (!string.IsNullOrWhiteSpace(initialResume.PhoneNo))
+                {
+                    mergedResume.PhoneNo = initialResume.PhoneNo;
+                }
+                initialResume = mergedResume;
+            }
+
             // If initial resume is provided, create the first history entry
             if (initialResume != null)
             {
@@ -1059,8 +1074,10 @@ public class ResumeRepository : IResumeRepository
         // In future, you could call Ollama for conversational AI
         return Task.FromResult("I'm ready to help you enhance your resume. Please provide your resume data or ask me any questions about resume writing!");
     }
-
-
+    public async Task<Resume?> GetMasterResumeAsync(long userId)
+    {
+        return await _resumeCollection.Find(r => r.UserId == userId).FirstOrDefaultAsync();
+    }
 
     #endregion
 

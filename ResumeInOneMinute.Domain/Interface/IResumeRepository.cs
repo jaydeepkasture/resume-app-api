@@ -32,5 +32,7 @@ public interface IResumeRepository
     Task<Response<bool>> SaveResumeAsync(long userId, string chatId, ResumeDto resume, string templateId);
     
     Task<Response<object>> UploadResumeAsync(long userId, Stream fileStream, string extension);
+    
+    Task<Resume?> GetMasterResumeAsync(long userId);
 }
 
