@@ -1,4 +1,5 @@
 using ResumeInOneMinute.Domain.DTO;
+using ResumeInOneMinute.Domain.Model;
 
 namespace ResumeInOneMinute.Domain.Interface;
 
@@ -29,5 +30,7 @@ public interface IResumeRepository
     Task<Response<EnhancementHistoryDetailDto>> GetEnhancementHistoryDetailAsync(long userId, string historyId);
     
     Task<Response<bool>> SaveResumeAsync(long userId, string chatId, ResumeDto resume, string templateId);
+    
+    Task<Response<object>> UploadResumeAsync(long userId, Stream fileStream, string extension);
 }
 

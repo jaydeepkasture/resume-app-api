@@ -57,6 +57,7 @@ builder.Services.AddSingleton<ResumeInOneMinute.Infrastructure.CommonServices.En
 builder.Services.AddScoped<IEmailService, ResumeInOneMinute.Infrastructure.Services.EmailService>();
 // Register Composite AI Service (Groq with Ollama fallback)
 builder.Services.AddScoped<IOllamaService, ResumeInOneMinute.Infrastructure.Services.CompositeAIService>();
+builder.Services.AddScoped<IGroqService, ResumeInOneMinute.Infrastructure.Services.GroqService>();
 
 // Register Repositories (DbContext is created manually in repository)
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
@@ -65,7 +66,6 @@ builder.Services.AddScoped<IHtmlTemplateRepository, HtmlTemplateRepository>();
 
 // Configure MongoDB Settings
 var mongoConnectionString = builder.Configuration.GetConnectionString("MongoDB");
-var mongoUrl = new MongoDB.Driver.MongoUrl(mongoConnectionString);
 
 // Configure JWT Settings
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -123,8 +123,8 @@ builder.Services.AddMemoryCache();
 
 
 // Add CORS
-string MyAllowSpecificOrigins = "http://localhost:1800";
-var allowedOriginArray = MyAllowSpecificOrigins
+string allowedOrigins = "http://localhost:1800, https://localhost:7200, http://localhost:5299, http://localhost:4200";
+var allowedOriginArray = allowedOrigins
     .Split(',', StringSplitOptions.RemoveEmptyEntries)
     .Select(x => x.Trim())
     .Where(x => !string.IsNullOrEmpty(x))

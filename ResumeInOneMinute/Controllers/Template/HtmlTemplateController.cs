@@ -3,7 +3,7 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using ResumeInOneMinute.Domain.DTO;
 using ResumeInOneMinute.Domain.Interface;
-
+using ResumeInOneMinute.Domain.Model;
 using System.Security.Claims;
 
 namespace ResumeInOneMinute.Controllers.Template;

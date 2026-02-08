@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using ResumeInOneMinute.Domain.DTO;
 using ResumeInOneMinute.Domain.Interface;
 using System.Security.Claims;
+using ResumeInOneMinute.Infrastructure.Services;
+using ResumeInOneMinute.Controllers.Super;
+using ResumeInOneMinute.Domain.Model;
 
 namespace ResumeInOneMinute.Controllers.Resume;
 
@@ -240,6 +243,39 @@ public class ResumeController : SuperController
         return result.Status ? Ok(result) : BadRequest(result);
     }
 
+    /// <summary>
+    /// Upload and parse resume file (PDF, DOCX)
+    /// </summary>
+    [HttpPost("upload")]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Upload(IFormFile file)
+    {
+        var userId = GetUserId();
+        if (userId == 0) return Unauthorized(new { Status = false, Message = "User not authenticated" });
+
+        if (file == null || file.Length == 0)
+            return BadRequest(new { Status = false, Message = "No file uploaded" });
+
+        if (file.Length > 1024 * 1024) // 1MB limit
+            return BadRequest(new { Status = false, Message = "File size exceeds 1MB limit" });
+
+        var extension = Path.GetExtension(file.FileName).ToLower();
+
+        try 
+        {
+            // Pass the stream directly to repository which now handles parsing logic
+            using var stream = file.OpenReadStream();
+            var result = await _resumeRepository.UploadResumeAsync(userId, stream, extension);
+            return result.Status ? Ok(result) : BadRequest(result);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { Status = false, Message = $"Processing failed: {ex.Message}" });
+        }
+    }
+
     #endregion
 
     #region Legacy Enhancement (Backward Compatibility)
@@ -353,12 +389,4 @@ public class ResumeController : SuperController
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         return long.TryParse(userIdClaim, out var userId) ? userId : 0;
     }
-}
-
-/// <summary>
-/// DTO for updating chat title
-/// </summary>
-public class UpdateChatTitleDto
-{
-    public string Title { get; set; } = string.Empty;
 }

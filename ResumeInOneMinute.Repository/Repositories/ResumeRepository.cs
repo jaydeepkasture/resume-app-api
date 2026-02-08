@@ -6,6 +6,8 @@ using ResumeInOneMinute.Domain.Interface;
 using ResumeInOneMinute.Domain.Model;
 using System.Diagnostics;
 using System.Text.Json;
+using UglyToad.PdfPig;
+using DocumentFormat.OpenXml.Packaging;
 
 namespace ResumeInOneMinute.Repository.Repositories;
 
@@ -14,14 +16,18 @@ public class ResumeRepository : IResumeRepository
     private readonly IMongoCollection<ResumeEnhancementHistory> _historyCollection;
     private readonly IMongoCollection<ChatSession> _chatSessionsCollection;
     private readonly IMongoCollection<HtmlTemplate> _htmlTemplateCollection;
+    private readonly IMongoCollection<Resume> _resumeCollection;
     private readonly IOllamaService _ollamaService;
+    private readonly IGroqService _groqService;
 
-    public ResumeRepository(IMongoDbService mongoDbService, IOllamaService ollamaService)
+    public ResumeRepository(IMongoDbService mongoDbService, IOllamaService ollamaService, IGroqService groqService)
     {
         _historyCollection = mongoDbService.GetCollection<ResumeEnhancementHistory>(MongoCollections.ResumeEnhancementHistory);
         _chatSessionsCollection = mongoDbService.GetCollection<ChatSession>(MongoCollections.ChatSessions);
         _htmlTemplateCollection = mongoDbService.GetCollection<HtmlTemplate>(MongoCollections.HtmlTemplates);
+        _resumeCollection = mongoDbService.GetCollection<Resume>(MongoCollections.Resume);
         _ollamaService = ollamaService;
+        _groqService = groqService;
         
         // Create indexes for better query performance
         CreateIndexes();
@@ -101,7 +107,7 @@ public class ResumeRepository : IResumeRepository
             {
                 OriginalResume = ConvertToResumeDto(h.OriginalResume),
                 EnhancedResume = ConvertToResumeDto(h.EnhancedResume),
-                EnhancementInstruction = h.EnhancementInstruction,
+                EnhancementInstruction = h.EnhancementInstruction ?? h.Message,
                 HistoryId = h.Id,
                 ProcessedAt = h.CreatedAt,
                 TemplateId = h.TemplateId
@@ -150,7 +156,7 @@ public class ResumeRepository : IResumeRepository
             {
                 OriginalResume = ConvertToResumeDto(history.OriginalResume),
                 EnhancedResume = ConvertToResumeDto(history.EnhancedResume),
-                EnhancementInstruction = history.EnhancementInstruction,
+                EnhancementInstruction = history.EnhancementInstruction ?? history.Message,
                 HistoryId = history.Id,
                 ProcessedAt = history.CreatedAt,
                 TemplateId = history.TemplateId
@@ -227,8 +233,9 @@ public class ResumeRepository : IResumeRepository
         return BsonDocument.Parse(json);
     }
 
-    private ResumeDto ConvertToResumeDto(BsonDocument bsonDocument)
+    private ResumeDto ConvertToResumeDto(BsonDocument? bsonDocument)
     {
+        if (bsonDocument == null) return new ResumeDto();
         var json = bsonDocument.ToJson();
         return JsonSerializer.Deserialize<ResumeDto>(json, new JsonSerializerOptions
         {
@@ -876,6 +883,79 @@ public class ResumeRepository : IResumeRepository
         }
     }
 
+    public async Task<Response<object>> UploadResumeAsync(long userId, Stream fileStream, string extension)
+    {
+        try
+        {
+            string text = string.Empty;
+            extension = extension.ToLower();
+
+            // 1. Extract text from the file locally
+            if (extension == ".pdf")
+            {
+                using var document = PdfDocument.Open(fileStream);
+                text = string.Join(" ", document.GetPages().Select(p => p.Text));
+                if (string.IsNullOrWhiteSpace(text)) 
+                    throw new Exception("Could not extract text from PDF. The file might be scanned or empty.");
+            }
+            else if (extension == ".docx" || extension == ".doc")
+            {
+                using var wordDoc = WordprocessingDocument.Open(fileStream, false);
+                text = wordDoc.MainDocumentPart?.Document?.Body?.InnerText ?? "";
+                if (string.IsNullOrWhiteSpace(text)) 
+                    throw new Exception("Could not extract text from Word document. The file might be empty.");
+            }
+            else
+            {
+                return new Response<object> 
+                { 
+                    Status = false, 
+                    Message = "Unsupported file format. Please upload a PDF or Word document (.docx, .doc)." 
+                };
+            }
+
+            // 2. Ask Groq to convert the extracted text into a ResumeDto object
+            var parsedResumeDto = await _groqService.ExtractResumeFromTextAsync(text);
+            if (parsedResumeDto == null)
+            {
+                throw new Exception("AI failed to parse the resume data from the extracted text.");
+            }
+
+            // 3. Insert/Update the ResumeDto into the resume collection
+            var filter = Builders<Resume>.Filter.Eq(r => r.UserId, userId);
+            var update = Builders<Resume>.Update
+                .Set(r => r.UserId, userId)
+                .Set(r => r.ResumeData, parsedResumeDto)
+                .Set(r => r.ParsedFrom, extension.TrimStart('.'))
+                .Set(r => r.UpdatedAt, DateTime.UtcNow)
+                .SetOnInsert(r => r.ParsedAt, DateTime.UtcNow);
+
+            var options = new FindOneAndUpdateOptions<Resume>
+            {
+                IsUpsert = true,
+                ReturnDocument = ReturnDocument.After
+            };
+
+            await _resumeCollection.FindOneAndUpdateAsync(filter, update, options);
+
+            return new Response<object>
+            {
+                Status = true,
+                Message = "Resume processed and saved successfully",
+                Data = null!
+            };
+        }
+        catch (Exception ex)
+        {
+            return new Response<object>
+            {
+                Status = false,
+                Message = $"Processing failed: {ex.Message}",
+                Data = null!
+            };
+        }
+    }
+
     public async Task<Response<ChatSessionSummaryDto>> UpdateChatTitleAsync(long userId, string chatId, string newTitle)
     {
         try
@@ -973,11 +1053,11 @@ public class ResumeRepository : IResumeRepository
         return context.ToString();
     }
 
-    private async Task<string> GetConversationalResponseAsync(string context)
+    private Task<string> GetConversationalResponseAsync(string context)
     {
         // For now, return a helpful message
         // In future, you could call Ollama for conversational AI
-        return "I'm ready to help you enhance your resume. Please provide your resume data or ask me any questions about resume writing!";
+        return Task.FromResult("I'm ready to help you enhance your resume. Please provide your resume data or ask me any questions about resume writing!");
     }
 
 

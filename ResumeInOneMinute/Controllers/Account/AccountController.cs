@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Authorization;
 using Asp.Versioning;
 using ResumeInOneMinute.Domain.DTO;
 using ResumeInOneMinute.Domain.Interface;
+using ResumeInOneMinute.Controllers.Super;
+using ResumeInOneMinute.Domain.Model;
 
-namespace ResumeInOneMinute.Controllers;
+namespace ResumeInOneMinute.Controllers.Account;
 
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/account")]

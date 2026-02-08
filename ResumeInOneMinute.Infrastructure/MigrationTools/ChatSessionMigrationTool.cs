@@ -4,7 +4,7 @@ using ResumeInOneMinute.Domain.Interface;
 using ResumeInOneMinute.Domain.Model;
 using Microsoft.Extensions.Logging;
 
-namespace ResumeInOneMinute.MigrationTools;
+namespace ResumeInOneMinute.Infrastructure.MigrationTools;
 
 /// <summary>
 /// Migration tool to convert old chat sessions with embedded messages
@@ -20,8 +20,7 @@ public class ChatSessionMigrationTool
         IMongoDbService mongoDbService,
         ILogger<ChatSessionMigrationTool> logger)
     {
-        var database = mongoDbService.GetDatabase();
-        _chatSessionsRaw = database.GetCollection<BsonDocument>("chat_sessions");
+        _chatSessionsRaw = mongoDbService.GetDatabase().GetCollection<BsonDocument>("chat_sessions");
         _historyCollection = mongoDbService.GetCollection<ResumeEnhancementHistory>("resume_enhancement_history");
         _logger = logger;
     }
@@ -52,7 +51,7 @@ public class ChatSessionMigrationTool
                 }
                 catch (Exception ex)
                 {
-                    var chatId = sessionDoc.Contains("_id") ? sessionDoc["_id"].ToString() : "unknown";
+                    var chatId = sessionDoc.Contains("_id") ? (sessionDoc["_id"].ToString() ?? "unknown") : "unknown";
                     _logger.LogError(ex, $"Error migrating session {chatId}: {ex.Message}");
                     result.FailedSessions.Add(new FailedSession
                     {

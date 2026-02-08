@@ -30,4 +30,9 @@ public static class MongoCollections
     /// </summary>
     public const string ChatSessions = "chat_sessions";
     public const string HtmlTemplates = "html_templates";
+    
+    /// <summary>
+    /// Collection for storing user master resumes
+    /// </summary>
+    public const string Resume = "resume";
 }

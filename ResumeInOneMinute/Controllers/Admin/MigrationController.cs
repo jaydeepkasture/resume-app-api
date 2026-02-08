@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using ResumeInOneMinute.Domain.Interface;
-using ResumeInOneMinute.MigrationTools;
+using ResumeInOneMinute.Infrastructure.MigrationTools;
 
 namespace ResumeInOneMinute.Controllers.Admin;
 

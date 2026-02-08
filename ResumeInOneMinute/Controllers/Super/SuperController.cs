@@ -1,11 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
-namespace ResumeInOneMinute.Controllers;
+namespace ResumeInOneMinute.Controllers.Super;
 
-[ApiController]
-[Produces("application/json")]
-public class SuperController : ControllerBase
+public abstract class SuperController : ControllerBase
 {
     protected long CurrentUserId
     {
@@ -28,7 +26,7 @@ public class SuperController : ControllerBase
     {
         get
         {
-             return User.FindFirst(ClaimTypes.Email)?.Value?.ToString() ?? string.Empty;
+             return User.FindFirst(ClaimTypes.Email)?.Value ?? string.Empty;
         }
     }
 }
