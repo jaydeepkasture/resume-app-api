@@ -34,5 +34,7 @@ public interface IResumeRepository
     Task<Response<object>> UploadResumeAsync(long userId, Stream fileStream, string extension);
     
     Task<Resume?> GetMasterResumeAsync(long userId);
+    Task<int> GetUserChatSessionCountAsync(long userId);
+    Task<int> GetDailyTokenUsageAsync(long userId);
 }
 

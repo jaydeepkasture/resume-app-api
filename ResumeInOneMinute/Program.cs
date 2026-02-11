@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Asp.Versioning;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -9,7 +8,6 @@ using ResumeInOneMinute.Repository.DataContexts;
 using ResumeInOneMinute.Repository.Repositories;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.RateLimiting;
 
 using Serilog;
 
@@ -63,6 +61,11 @@ builder.Services.AddScoped<IGroqService, ResumeInOneMinute.Infrastructure.Servic
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IResumeRepository, ResumeInOneMinute.Repository.Repositories.ResumeRepository>();
 builder.Services.AddScoped<IHtmlTemplateRepository, HtmlTemplateRepository>();
+builder.Services.AddScoped<IBillingRepository, BillingRepository>();
+
+// Register Services
+builder.Services.AddScoped<IRazorpayService, ResumeInOneMinute.Infrastructure.Services.RazorpayService>();
+builder.Services.AddScoped<ISubscriptionService, ResumeInOneMinute.Infrastructure.Services.SubscriptionService>();
 
 // Configure MongoDB Settings
 var mongoConnectionString = builder.Configuration.GetConnectionString("MongoDB");
@@ -94,25 +97,10 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-// Add Rate Limiting by User ID
+// Rate limiting is now handled via custom middleware for plan-based dynamic limits
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-
-    // Rate limit policy by user ID
-    options.AddPolicy("userPolicy", context =>
-    {
-        var userId = context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "anonymous";
-
-        return RateLimitPartition.GetFixedWindowLimiter(userId, _ =>
-            new FixedWindowRateLimiterOptions
-            {
-                PermitLimit = builder.Configuration.GetValue<int>("RateLimitSettings:PermitLimit"),
-                Window = TimeSpan.FromSeconds(builder.Configuration.GetValue<int>("RateLimitSettings:Window")),
-                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-                QueueLimit = builder.Configuration.GetValue<int>("RateLimitSettings:QueueLimit")
-            });
-    });
 });
 
 // Add Response Caching
@@ -313,6 +301,9 @@ app.UseMiddleware<ResumeInOneMinute.Middleware.TokenDecryptionMiddleware>();
 // Authentication & Authorization
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Plan-based Rate Limiting (Must be after Auth)
+app.UseMiddleware<ResumeInOneMinute.Middleware.RateLimitingMiddleware>();
 
 app.MapControllers();
 

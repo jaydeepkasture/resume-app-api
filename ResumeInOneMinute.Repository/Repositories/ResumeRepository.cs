@@ -1081,5 +1081,28 @@ public class ResumeRepository : IResumeRepository
 
     #endregion
 
+    public async Task<int> GetUserChatSessionCountAsync(long userId)
+    {
+        var filter = Builders<ChatSession>.Filter.And(
+            Builders<ChatSession>.Filter.Eq(c => c.UserId, userId),
+            Builders<ChatSession>.Filter.Eq(c => c.IsDeleted, false)
+        );
+        return (int)await _chatSessionsCollection.CountDocumentsAsync(filter);
+    }
+
+    public async Task<int> GetDailyTokenUsageAsync(long userId)
+    {
+        var todayStart = DateTime.UtcNow.Date;
+        var filter = Builders<ResumeEnhancementHistory>.Filter.And(
+            Builders<ResumeEnhancementHistory>.Filter.Eq(h => h.UserId, userId),
+            Builders<ResumeEnhancementHistory>.Filter.Gte(h => h.CreatedAt, todayStart)
+        );
+
+        var history = await _historyCollection.Find(filter).ToListAsync();
+        
+        // Sum characters from Message (new) and EnhancementInstruction (legacy)
+        return history.Sum(h => (h.Message?.Length ?? 0) + (h.EnhancementInstruction?.Length ?? 0));
+    }
+
     #endregion
 }

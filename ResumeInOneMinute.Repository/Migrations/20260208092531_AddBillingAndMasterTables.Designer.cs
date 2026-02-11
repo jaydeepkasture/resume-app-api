@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ResumeInOneMinute.Repository.DataContexts;
@@ -11,9 +12,11 @@ using ResumeInOneMinute.Repository.DataContexts;
 namespace ResumeInOneMinute.Repository.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260208092531_AddBillingAndMasterTables")]
+    partial class AddBillingAndMasterTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -75,355 +78,6 @@ namespace ResumeInOneMinute.Repository.Migrations
                         .HasDatabaseName("ix_master_values_master_type_code");
 
                     b.ToTable("master_values", "master");
-
-                    b.HasData(
-                        new
-                        {
-                            MasterValueId = 1L,
-                            Code = "FREE",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1362),
-                            DisplayName = "Free",
-                            IsActive = true,
-                            MasterType = "PLAN_CODE",
-                            SortOrder = 1
-                        },
-                        new
-                        {
-                            MasterValueId = 2L,
-                            Code = "PRO",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1365),
-                            DisplayName = "Pro",
-                            IsActive = true,
-                            MasterType = "PLAN_CODE",
-                            SortOrder = 2
-                        },
-                        new
-                        {
-                            MasterValueId = 3L,
-                            Code = "ENTERPRISE",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1366),
-                            DisplayName = "Enterprise",
-                            IsActive = true,
-                            MasterType = "PLAN_CODE",
-                            SortOrder = 3
-                        },
-                        new
-                        {
-                            MasterValueId = 4L,
-                            Code = "MONTHLY",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1367),
-                            DisplayName = "Monthly",
-                            IsActive = true,
-                            MasterType = "BILLING_CYCLE",
-                            SortOrder = 1
-                        },
-                        new
-                        {
-                            MasterValueId = 5L,
-                            Code = "YEARLY",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1368),
-                            DisplayName = "Yearly",
-                            IsActive = true,
-                            MasterType = "BILLING_CYCLE",
-                            SortOrder = 2
-                        },
-                        new
-                        {
-                            MasterValueId = 6L,
-                            Code = "INR",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1369),
-                            DisplayName = "Indian Rupee",
-                            IsActive = true,
-                            MasterType = "CURRENCY",
-                            SortOrder = 1
-                        },
-                        new
-                        {
-                            MasterValueId = 7L,
-                            Code = "USD",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1370),
-                            DisplayName = "US Dollar",
-                            IsActive = true,
-                            MasterType = "CURRENCY",
-                            SortOrder = 2
-                        },
-                        new
-                        {
-                            MasterValueId = 8L,
-                            Code = "ACTIVE",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1371),
-                            DisplayName = "Active",
-                            IsActive = true,
-                            MasterType = "SUBSCRIPTION_STATUS",
-                            SortOrder = 1
-                        },
-                        new
-                        {
-                            MasterValueId = 9L,
-                            Code = "CANCELLED",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1372),
-                            DisplayName = "Cancelled",
-                            IsActive = true,
-                            MasterType = "SUBSCRIPTION_STATUS",
-                            SortOrder = 2
-                        },
-                        new
-                        {
-                            MasterValueId = 10L,
-                            Code = "EXPIRED",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1374),
-                            DisplayName = "Expired",
-                            IsActive = true,
-                            MasterType = "SUBSCRIPTION_STATUS",
-                            SortOrder = 3
-                        },
-                        new
-                        {
-                            MasterValueId = 11L,
-                            Code = "PAUSED",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1375),
-                            DisplayName = "Paused",
-                            IsActive = true,
-                            MasterType = "SUBSCRIPTION_STATUS",
-                            SortOrder = 4
-                        },
-                        new
-                        {
-                            MasterValueId = 12L,
-                            Code = "UPGRADE",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1376),
-                            DisplayName = "Upgrade",
-                            IsActive = true,
-                            MasterType = "SUBSCRIPTION_CHANGE_TYPE",
-                            SortOrder = 1
-                        },
-                        new
-                        {
-                            MasterValueId = 13L,
-                            Code = "DOWNGRADE",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1377),
-                            DisplayName = "Downgrade",
-                            IsActive = true,
-                            MasterType = "SUBSCRIPTION_CHANGE_TYPE",
-                            SortOrder = 2
-                        },
-                        new
-                        {
-                            MasterValueId = 14L,
-                            Code = "RENEWAL",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1378),
-                            DisplayName = "Renewal",
-                            IsActive = true,
-                            MasterType = "SUBSCRIPTION_CHANGE_TYPE",
-                            SortOrder = 3
-                        },
-                        new
-                        {
-                            MasterValueId = 15L,
-                            Code = "CANCEL",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1380),
-                            DisplayName = "Cancel",
-                            IsActive = true,
-                            MasterType = "SUBSCRIPTION_CHANGE_TYPE",
-                            SortOrder = 4
-                        },
-                        new
-                        {
-                            MasterValueId = 16L,
-                            Code = "PENDING",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1381),
-                            DisplayName = "Pending",
-                            IsActive = true,
-                            MasterType = "PAYMENT_STATUS",
-                            SortOrder = 1
-                        },
-                        new
-                        {
-                            MasterValueId = 17L,
-                            Code = "SUCCESS",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1382),
-                            DisplayName = "Success",
-                            IsActive = true,
-                            MasterType = "PAYMENT_STATUS",
-                            SortOrder = 2
-                        },
-                        new
-                        {
-                            MasterValueId = 18L,
-                            Code = "FAILED",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1383),
-                            DisplayName = "Failed",
-                            IsActive = true,
-                            MasterType = "PAYMENT_STATUS",
-                            SortOrder = 3
-                        },
-                        new
-                        {
-                            MasterValueId = 19L,
-                            Code = "RAZORPAY",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1385),
-                            DisplayName = "Razorpay",
-                            IsActive = true,
-                            MasterType = "PAYMENT_PROVIDER",
-                            SortOrder = 1
-                        });
-                });
-
-            modelBuilder.Entity("ResumeInOneMinute.Domain.Model.PlanBenefit", b =>
-                {
-                    b.Property<long>("BenefitId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("benefit_id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("BenefitId"));
-
-                    b.Property<string>("BenefitCode")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("benefit_code");
-
-                    b.Property<string>("BenefitName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("benefit_name");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text")
-                        .HasColumnName("description");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_active");
-
-                    b.HasKey("BenefitId")
-                        .HasName("pk_plan_benefits");
-
-                    b.ToTable("plan_benefits", "billing");
-
-                    b.HasData(
-                        new
-                        {
-                            BenefitId = 1L,
-                            BenefitCode = "TEMPLATE_LIMIT",
-                            BenefitName = "Template Limit",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1529),
-                            Description = "Number of templates allowed",
-                            IsActive = true
-                        },
-                        new
-                        {
-                            BenefitId = 2L,
-                            BenefitCode = "RATE_LIMIT_PER_MINUTE",
-                            BenefitName = "Rate Limit",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1531),
-                            Description = "API requests per minute",
-                            IsActive = true
-                        },
-                        new
-                        {
-                            BenefitId = 3L,
-                            BenefitCode = "DAILY_TOKEN_LIMIT",
-                            BenefitName = "Daily Token Limit",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1532),
-                            Description = "Total instruction message characters per day",
-                            IsActive = true
-                        });
-                });
-
-            modelBuilder.Entity("ResumeInOneMinute.Domain.Model.PlanBenefitMap", b =>
-                {
-                    b.Property<long>("MapId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("map_id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("MapId"));
-
-                    b.Property<long>("BenefitId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("benefit_id");
-
-                    b.Property<string>("BenefitValue")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("benefit_value");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<long>("PlanId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("plan_id");
-
-                    b.HasKey("MapId")
-                        .HasName("pk_plan_benefit_map");
-
-                    b.HasIndex("BenefitId")
-                        .HasDatabaseName("ix_plan_benefit_map_benefit_id");
-
-                    b.HasIndex("PlanId")
-                        .HasDatabaseName("ix_plan_benefit_map_plan_id");
-
-                    b.ToTable("plan_benefit_map", "billing");
-
-                    b.HasData(
-                        new
-                        {
-                            MapId = 1L,
-                            BenefitId = 1L,
-                            BenefitValue = "3",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1559),
-                            PlanId = 1L
-                        },
-                        new
-                        {
-                            MapId = 2L,
-                            BenefitId = 2L,
-                            BenefitValue = "30",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1561),
-                            PlanId = 1L
-                        },
-                        new
-                        {
-                            MapId = 5L,
-                            BenefitId = 3L,
-                            BenefitValue = "3000",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1562),
-                            PlanId = 1L
-                        },
-                        new
-                        {
-                            MapId = 3L,
-                            BenefitId = 1L,
-                            BenefitValue = "50",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1563),
-                            PlanId = 2L
-                        },
-                        new
-                        {
-                            MapId = 4L,
-                            BenefitId = 2L,
-                            BenefitValue = "300",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1564),
-                            PlanId = 2L
-                        },
-                        new
-                        {
-                            MapId = 6L,
-                            BenefitId = 3L,
-                            BenefitValue = "10000",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1565),
-                            PlanId = 2L
-                        });
                 });
 
             modelBuilder.Entity("ResumeInOneMinute.Domain.Model.SubscriptionPayment", b =>
@@ -459,10 +113,6 @@ namespace ResumeInOneMinute.Repository.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("payment_status_id");
 
-                    b.Property<long>("PlanPriceId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("plan_price_id");
-
                     b.Property<string>("ProviderOrderId")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
@@ -488,9 +138,6 @@ namespace ResumeInOneMinute.Repository.Migrations
 
                     b.HasIndex("PaymentStatusId")
                         .HasDatabaseName("ix_subscription_payments_payment_status_id");
-
-                    b.HasIndex("PlanPriceId")
-                        .HasDatabaseName("ix_subscription_payments_plan_price_id");
 
                     b.HasIndex("UserSubscriptionId")
                         .HasDatabaseName("ix_subscription_payments_user_subscription_id");
@@ -850,27 +497,6 @@ namespace ResumeInOneMinute.Repository.Migrations
                     b.ToTable("user_subscription_history", "billing");
                 });
 
-            modelBuilder.Entity("ResumeInOneMinute.Domain.Model.PlanBenefitMap", b =>
-                {
-                    b.HasOne("ResumeInOneMinute.Domain.Model.PlanBenefit", "Benefit")
-                        .WithMany()
-                        .HasForeignKey("BenefitId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_plan_benefit_map_plan_benefits_benefit_id");
-
-                    b.HasOne("ResumeInOneMinute.Domain.Model.SubscriptionPlan", "Plan")
-                        .WithMany("Benefits")
-                        .HasForeignKey("PlanId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_plan_benefit_map_subscription_plans_plan_id");
-
-                    b.Navigation("Benefit");
-
-                    b.Navigation("Plan");
-                });
-
             modelBuilder.Entity("ResumeInOneMinute.Domain.Model.SubscriptionPayment", b =>
                 {
                     b.HasOne("ResumeInOneMinute.Domain.Model.MasterValue", "Currency")
@@ -894,13 +520,6 @@ namespace ResumeInOneMinute.Repository.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_subscription_payments_master_values_payment_status_id");
 
-                    b.HasOne("ResumeInOneMinute.Domain.Model.SubscriptionPlanPrice", "PlanPrice")
-                        .WithMany()
-                        .HasForeignKey("PlanPriceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_subscription_payments_subscription_plan_prices_plan_price_id");
-
                     b.HasOne("ResumeInOneMinute.Domain.Model.UserSubscription", "UserSubscription")
                         .WithMany()
                         .HasForeignKey("UserSubscriptionId")
@@ -911,8 +530,6 @@ namespace ResumeInOneMinute.Repository.Migrations
                     b.Navigation("PaymentProvider");
 
                     b.Navigation("PaymentStatus");
-
-                    b.Navigation("PlanPrice");
 
                     b.Navigation("UserSubscription");
                 });
@@ -1029,11 +646,6 @@ namespace ResumeInOneMinute.Repository.Migrations
                     b.Navigation("ChangeType");
 
                     b.Navigation("UserSubscription");
-                });
-
-            modelBuilder.Entity("ResumeInOneMinute.Domain.Model.SubscriptionPlan", b =>
-                {
-                    b.Navigation("Benefits");
                 });
 
             modelBuilder.Entity("ResumeInOneMinute.Domain.Model.User", b =>

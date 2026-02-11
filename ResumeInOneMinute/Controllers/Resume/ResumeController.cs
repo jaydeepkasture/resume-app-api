@@ -4,9 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using ResumeInOneMinute.Domain.DTO;
 using ResumeInOneMinute.Domain.Interface;
 using System.Security.Claims;
-using ResumeInOneMinute.Infrastructure.Services;
 using ResumeInOneMinute.Controllers.Super;
-using ResumeInOneMinute.Domain.Model;
 
 namespace ResumeInOneMinute.Controllers.Resume;
 
@@ -19,11 +17,13 @@ public class ResumeController : SuperController
 {
     private readonly IResumeRepository _resumeRepository;
     private readonly IAccountRepository _accountRepository;
+    private readonly ISubscriptionService _subscriptionService;
 
-    public ResumeController(IResumeRepository resumeRepository, IAccountRepository accountRepository)
+    public ResumeController(IResumeRepository resumeRepository, IAccountRepository accountRepository, ISubscriptionService subscriptionService)
     {
         _resumeRepository = resumeRepository;
         _accountRepository = accountRepository;
+        _subscriptionService = subscriptionService;
     }
 
     #region Chat-Based Enhancement (New - ChatGPT-like)
@@ -48,6 +48,17 @@ public class ResumeController : SuperController
         {
             return Unauthorized(new { Status = false, Message = "User not found" });
         }
+
+        // Check Template Limit
+        // var benefits = await _subscriptionService.GetUserBenefitsAsync(userId);
+        // if (benefits.TryGetValue("TEMPLATE_LIMIT", out var limitStr) && int.TryParse(limitStr, out var limit))
+        // {
+        //     var currentCount = await _resumeRepository.GetUserChatSessionCountAsync(userId);
+        //     if (currentCount >= limit)
+        //     {
+        //         return StatusCode(StatusCodes.Status403Forbidden, new { Status = false, Message = $"Template limit reached ({limit}). Please upgrade your plan." });
+        //     }
+        // }
 
         // Create empty resume data with just user contact info
         var initialResume = new ResumeDto
@@ -92,6 +103,19 @@ public class ResumeController : SuperController
         if (userId == 0)
         {
             return Unauthorized(new { Status = false, Message = "User not authenticated" });
+        }
+
+        // Check Daily Token Limit
+        var benefits = await _subscriptionService.GetUserBenefitsAsync(userId);
+        if (benefits.TryGetValue("DAILY_TOKEN_LIMIT", out var limitStr) && int.TryParse(limitStr, out var limit))
+        {
+            var usage = await _resumeRepository.GetDailyTokenUsageAsync(userId);
+            var incomingTokens = request.Message?.Length ?? 0;
+            
+            if (usage + incomingTokens > limit)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, new { Status = false, Message = $"Daily token limit reached. Your plan allows {limit} tokens/day. You have used {usage} tokens today. Please upgrade for higher limits." });
+            }
         }
 
         var result = await _resumeRepository.ChatEnhanceAsync(userId, request);
@@ -305,6 +329,19 @@ public class ResumeController : SuperController
         if (userId == 0)
         {
             return Unauthorized(new { Status = false, Message = "User not authenticated" });
+        }
+
+        // Check Daily Token Limit
+        var benefits = await _subscriptionService.GetUserBenefitsAsync(userId);
+        if (benefits.TryGetValue("DAILY_TOKEN_LIMIT", out var limitStr) && int.TryParse(limitStr, out var limit))
+        {
+            var usage = await _resumeRepository.GetDailyTokenUsageAsync(userId);
+            var incomingTokens = request.EnhancementInstruction?.Length ?? 0;
+            
+            if (usage + incomingTokens > limit)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, new { Status = false, Message = $"Daily token limit reached. Your plan allows {limit} tokens/day. You have used {usage} tokens today. Please upgrade for higher limits." });
+            }
         }
 
         var result = await _resumeRepository.EnhanceResumeAsync(userId, request);

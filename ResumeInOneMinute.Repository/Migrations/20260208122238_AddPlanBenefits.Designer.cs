@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using ResumeInOneMinute.Repository.DataContexts;
@@ -11,9 +12,11 @@ using ResumeInOneMinute.Repository.DataContexts;
 namespace ResumeInOneMinute.Repository.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260208122238_AddPlanBenefits")]
+    partial class AddPlanBenefits
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -81,7 +84,7 @@ namespace ResumeInOneMinute.Repository.Migrations
                         {
                             MasterValueId = 1L,
                             Code = "FREE",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1362),
+                            CreatedAt = new DateTime(2026, 2, 8, 12, 22, 35, 797, DateTimeKind.Utc).AddTicks(6572),
                             DisplayName = "Free",
                             IsActive = true,
                             MasterType = "PLAN_CODE",
@@ -91,7 +94,7 @@ namespace ResumeInOneMinute.Repository.Migrations
                         {
                             MasterValueId = 2L,
                             Code = "PRO",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1365),
+                            CreatedAt = new DateTime(2026, 2, 8, 12, 22, 35, 797, DateTimeKind.Utc).AddTicks(6579),
                             DisplayName = "Pro",
                             IsActive = true,
                             MasterType = "PLAN_CODE",
@@ -101,7 +104,7 @@ namespace ResumeInOneMinute.Repository.Migrations
                         {
                             MasterValueId = 3L,
                             Code = "ENTERPRISE",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1366),
+                            CreatedAt = new DateTime(2026, 2, 8, 12, 22, 35, 797, DateTimeKind.Utc).AddTicks(6580),
                             DisplayName = "Enterprise",
                             IsActive = true,
                             MasterType = "PLAN_CODE",
@@ -111,7 +114,7 @@ namespace ResumeInOneMinute.Repository.Migrations
                         {
                             MasterValueId = 4L,
                             Code = "MONTHLY",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1367),
+                            CreatedAt = new DateTime(2026, 2, 8, 12, 22, 35, 797, DateTimeKind.Utc).AddTicks(6581),
                             DisplayName = "Monthly",
                             IsActive = true,
                             MasterType = "BILLING_CYCLE",
@@ -121,7 +124,7 @@ namespace ResumeInOneMinute.Repository.Migrations
                         {
                             MasterValueId = 5L,
                             Code = "YEARLY",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1368),
+                            CreatedAt = new DateTime(2026, 2, 8, 12, 22, 35, 797, DateTimeKind.Utc).AddTicks(6582),
                             DisplayName = "Yearly",
                             IsActive = true,
                             MasterType = "BILLING_CYCLE",
@@ -131,7 +134,7 @@ namespace ResumeInOneMinute.Repository.Migrations
                         {
                             MasterValueId = 6L,
                             Code = "INR",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1369),
+                            CreatedAt = new DateTime(2026, 2, 8, 12, 22, 35, 797, DateTimeKind.Utc).AddTicks(6584),
                             DisplayName = "Indian Rupee",
                             IsActive = true,
                             MasterType = "CURRENCY",
@@ -141,7 +144,7 @@ namespace ResumeInOneMinute.Repository.Migrations
                         {
                             MasterValueId = 7L,
                             Code = "USD",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1370),
+                            CreatedAt = new DateTime(2026, 2, 8, 12, 22, 35, 797, DateTimeKind.Utc).AddTicks(6585),
                             DisplayName = "US Dollar",
                             IsActive = true,
                             MasterType = "CURRENCY",
@@ -151,7 +154,7 @@ namespace ResumeInOneMinute.Repository.Migrations
                         {
                             MasterValueId = 8L,
                             Code = "ACTIVE",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1371),
+                            CreatedAt = new DateTime(2026, 2, 8, 12, 22, 35, 797, DateTimeKind.Utc).AddTicks(6586),
                             DisplayName = "Active",
                             IsActive = true,
                             MasterType = "SUBSCRIPTION_STATUS",
@@ -161,7 +164,7 @@ namespace ResumeInOneMinute.Repository.Migrations
                         {
                             MasterValueId = 9L,
                             Code = "CANCELLED",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1372),
+                            CreatedAt = new DateTime(2026, 2, 8, 12, 22, 35, 797, DateTimeKind.Utc).AddTicks(6587),
                             DisplayName = "Cancelled",
                             IsActive = true,
                             MasterType = "SUBSCRIPTION_STATUS",
@@ -171,7 +174,7 @@ namespace ResumeInOneMinute.Repository.Migrations
                         {
                             MasterValueId = 10L,
                             Code = "EXPIRED",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1374),
+                            CreatedAt = new DateTime(2026, 2, 8, 12, 22, 35, 797, DateTimeKind.Utc).AddTicks(6588),
                             DisplayName = "Expired",
                             IsActive = true,
                             MasterType = "SUBSCRIPTION_STATUS",
@@ -181,7 +184,7 @@ namespace ResumeInOneMinute.Repository.Migrations
                         {
                             MasterValueId = 11L,
                             Code = "PAUSED",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1375),
+                            CreatedAt = new DateTime(2026, 2, 8, 12, 22, 35, 797, DateTimeKind.Utc).AddTicks(6589),
                             DisplayName = "Paused",
                             IsActive = true,
                             MasterType = "SUBSCRIPTION_STATUS",
@@ -191,7 +194,7 @@ namespace ResumeInOneMinute.Repository.Migrations
                         {
                             MasterValueId = 12L,
                             Code = "UPGRADE",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1376),
+                            CreatedAt = new DateTime(2026, 2, 8, 12, 22, 35, 797, DateTimeKind.Utc).AddTicks(6591),
                             DisplayName = "Upgrade",
                             IsActive = true,
                             MasterType = "SUBSCRIPTION_CHANGE_TYPE",
@@ -201,7 +204,7 @@ namespace ResumeInOneMinute.Repository.Migrations
                         {
                             MasterValueId = 13L,
                             Code = "DOWNGRADE",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1377),
+                            CreatedAt = new DateTime(2026, 2, 8, 12, 22, 35, 797, DateTimeKind.Utc).AddTicks(6592),
                             DisplayName = "Downgrade",
                             IsActive = true,
                             MasterType = "SUBSCRIPTION_CHANGE_TYPE",
@@ -211,7 +214,7 @@ namespace ResumeInOneMinute.Repository.Migrations
                         {
                             MasterValueId = 14L,
                             Code = "RENEWAL",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1378),
+                            CreatedAt = new DateTime(2026, 2, 8, 12, 22, 35, 797, DateTimeKind.Utc).AddTicks(6593),
                             DisplayName = "Renewal",
                             IsActive = true,
                             MasterType = "SUBSCRIPTION_CHANGE_TYPE",
@@ -221,7 +224,7 @@ namespace ResumeInOneMinute.Repository.Migrations
                         {
                             MasterValueId = 15L,
                             Code = "CANCEL",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1380),
+                            CreatedAt = new DateTime(2026, 2, 8, 12, 22, 35, 797, DateTimeKind.Utc).AddTicks(6594),
                             DisplayName = "Cancel",
                             IsActive = true,
                             MasterType = "SUBSCRIPTION_CHANGE_TYPE",
@@ -231,7 +234,7 @@ namespace ResumeInOneMinute.Repository.Migrations
                         {
                             MasterValueId = 16L,
                             Code = "PENDING",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1381),
+                            CreatedAt = new DateTime(2026, 2, 8, 12, 22, 35, 797, DateTimeKind.Utc).AddTicks(6595),
                             DisplayName = "Pending",
                             IsActive = true,
                             MasterType = "PAYMENT_STATUS",
@@ -241,7 +244,7 @@ namespace ResumeInOneMinute.Repository.Migrations
                         {
                             MasterValueId = 17L,
                             Code = "SUCCESS",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1382),
+                            CreatedAt = new DateTime(2026, 2, 8, 12, 22, 35, 797, DateTimeKind.Utc).AddTicks(6596),
                             DisplayName = "Success",
                             IsActive = true,
                             MasterType = "PAYMENT_STATUS",
@@ -251,7 +254,7 @@ namespace ResumeInOneMinute.Repository.Migrations
                         {
                             MasterValueId = 18L,
                             Code = "FAILED",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1383),
+                            CreatedAt = new DateTime(2026, 2, 8, 12, 22, 35, 797, DateTimeKind.Utc).AddTicks(6597),
                             DisplayName = "Failed",
                             IsActive = true,
                             MasterType = "PAYMENT_STATUS",
@@ -261,7 +264,7 @@ namespace ResumeInOneMinute.Repository.Migrations
                         {
                             MasterValueId = 19L,
                             Code = "RAZORPAY",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1385),
+                            CreatedAt = new DateTime(2026, 2, 8, 12, 22, 35, 797, DateTimeKind.Utc).AddTicks(6599),
                             DisplayName = "Razorpay",
                             IsActive = true,
                             MasterType = "PAYMENT_PROVIDER",
@@ -313,7 +316,7 @@ namespace ResumeInOneMinute.Repository.Migrations
                             BenefitId = 1L,
                             BenefitCode = "TEMPLATE_LIMIT",
                             BenefitName = "Template Limit",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1529),
+                            CreatedAt = new DateTime(2026, 2, 8, 12, 22, 35, 797, DateTimeKind.Utc).AddTicks(6737),
                             Description = "Number of templates allowed",
                             IsActive = true
                         },
@@ -322,17 +325,8 @@ namespace ResumeInOneMinute.Repository.Migrations
                             BenefitId = 2L,
                             BenefitCode = "RATE_LIMIT_PER_MINUTE",
                             BenefitName = "Rate Limit",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1531),
+                            CreatedAt = new DateTime(2026, 2, 8, 12, 22, 35, 797, DateTimeKind.Utc).AddTicks(6739),
                             Description = "API requests per minute",
-                            IsActive = true
-                        },
-                        new
-                        {
-                            BenefitId = 3L,
-                            BenefitCode = "DAILY_TOKEN_LIMIT",
-                            BenefitName = "Daily Token Limit",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1532),
-                            Description = "Total instruction message characters per day",
                             IsActive = true
                         });
                 });
@@ -381,7 +375,7 @@ namespace ResumeInOneMinute.Repository.Migrations
                             MapId = 1L,
                             BenefitId = 1L,
                             BenefitValue = "3",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1559),
+                            CreatedAt = new DateTime(2026, 2, 8, 12, 22, 35, 797, DateTimeKind.Utc).AddTicks(6769),
                             PlanId = 1L
                         },
                         new
@@ -389,15 +383,7 @@ namespace ResumeInOneMinute.Repository.Migrations
                             MapId = 2L,
                             BenefitId = 2L,
                             BenefitValue = "30",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1561),
-                            PlanId = 1L
-                        },
-                        new
-                        {
-                            MapId = 5L,
-                            BenefitId = 3L,
-                            BenefitValue = "3000",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1562),
+                            CreatedAt = new DateTime(2026, 2, 8, 12, 22, 35, 797, DateTimeKind.Utc).AddTicks(6771),
                             PlanId = 1L
                         },
                         new
@@ -405,7 +391,7 @@ namespace ResumeInOneMinute.Repository.Migrations
                             MapId = 3L,
                             BenefitId = 1L,
                             BenefitValue = "50",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1563),
+                            CreatedAt = new DateTime(2026, 2, 8, 12, 22, 35, 797, DateTimeKind.Utc).AddTicks(6772),
                             PlanId = 2L
                         },
                         new
@@ -413,15 +399,7 @@ namespace ResumeInOneMinute.Repository.Migrations
                             MapId = 4L,
                             BenefitId = 2L,
                             BenefitValue = "300",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1564),
-                            PlanId = 2L
-                        },
-                        new
-                        {
-                            MapId = 6L,
-                            BenefitId = 3L,
-                            BenefitValue = "10000",
-                            CreatedAt = new DateTime(2026, 2, 8, 12, 50, 15, 716, DateTimeKind.Utc).AddTicks(1565),
+                            CreatedAt = new DateTime(2026, 2, 8, 12, 22, 35, 797, DateTimeKind.Utc).AddTicks(6773),
                             PlanId = 2L
                         });
                 });
