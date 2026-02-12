@@ -13,6 +13,12 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Load Shared Settings
+builder.Configuration.AddJsonFile("appsettings.Shared.json", optional: true, reloadOnChange: true);
+builder.Configuration.AddEnvironmentVariables();
+
+
+
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
@@ -68,11 +74,14 @@ builder.Services.AddScoped<IRazorpayService, ResumeInOneMinute.Infrastructure.Se
 builder.Services.AddScoped<ISubscriptionService, ResumeInOneMinute.Infrastructure.Services.SubscriptionService>();
 
 // Configure MongoDB Settings
-var mongoConnectionString = builder.Configuration.GetConnectionString("MongoDB");
+// Handled by MongoDbService via IConfiguration
 
 // Configure JWT Settings
+
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not configured");
+var secretKey = jwtSettings["SecretKey"] 
+    ?? throw new InvalidOperationException("JWT SecretKey not configured");
+
 
 // Add Authentication
 builder.Services.AddAuthentication(options =>
@@ -111,12 +120,18 @@ builder.Services.AddMemoryCache();
 
 
 // Add CORS
-string allowedOrigins = "http://localhost:1800, https://localhost:7200, http://localhost:5299, http://localhost:4200";
+string? allowedOrigins = builder.Configuration["CorsSettings:AllowedOrigins"];
+if (string.IsNullOrWhiteSpace(allowedOrigins))
+{
+    allowedOrigins = "http://localhost:4200";
+}
+
 var allowedOriginArray = allowedOrigins
     .Split(',', StringSplitOptions.RemoveEmptyEntries)
     .Select(x => x.Trim())
     .Where(x => !string.IsNullOrEmpty(x))
     .ToArray();
+
 
 builder.Services.AddCors(options =>
 {

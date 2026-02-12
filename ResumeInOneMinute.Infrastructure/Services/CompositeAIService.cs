@@ -26,7 +26,8 @@ public class CompositeAIService : IOllamaService
         _logger = logger;
         
         // Groq Configuration
-        _groqApiKey =  Environment.GetEnvironmentVariable("GROQ_API_KEY");
+        _groqApiKey = configuration["GroqSettings:ApiKey"];
+
         _groqBaseUrl = configuration["GroqSettings:BaseUrl"] ?? "https://api.groq.com/openai/v1";
         _groqModel = configuration["GroqSettings:Model"] ?? "llama-3.3-70b-versatile";
         

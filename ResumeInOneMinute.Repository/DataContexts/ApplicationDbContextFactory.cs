@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Configuration;
+
 
 namespace ResumeInOneMinute.Repository.DataContexts;
 
@@ -9,11 +11,24 @@ public class ApplicationDbContextFactory : IDesignTimeDbContextFactory<Applicati
     {
         var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
         
-        // Use the connection string directly to avoid path issues during migration
-        var connectionString = "Host=localhost;Port=5432;Database=resume_app_dev;Username=postgres;Password=htmltopdffile@007";
+        // Load configuration to get the connection string
+        var environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
+        
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(System.IO.Directory.GetParent(System.IO.Directory.GetCurrentDirectory())?.FullName 
+                         ?? System.IO.Directory.GetCurrentDirectory())
+
+            .AddJsonFile("ResumeInOneMinute/appsettings.json", optional: true)
+            .AddJsonFile($"ResumeInOneMinute/appsettings.{environmentName}.json", optional: true)
+            .AddJsonFile("ResumeInOneMinute/appsettings.Shared.json", optional: true)
+            .AddEnvironmentVariables()
+            .Build();
+
+        var connectionString = configuration.GetConnectionString("PostgreSQL");
 
         optionsBuilder.UseNpgsql(connectionString)
                       .UseSnakeCaseNamingConvention();
+
 
         return new ApplicationDbContext(optionsBuilder.Options);
     }

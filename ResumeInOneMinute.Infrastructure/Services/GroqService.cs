@@ -20,8 +20,9 @@ public class GroqService : IGroqService
     public GroqService(IConfiguration configuration, ILogger<GroqService> logger)
     {
         _logger = logger;
-        _apiKey =  Environment.GetEnvironmentVariable("GROQ_API_KEY") 
-                  ?? throw new InvalidOperationException("GROQ_API_KEY is not configured");
+        _apiKey = configuration["GroqSettings:ApiKey"] 
+                  ?? throw new InvalidOperationException("GroqSettings:ApiKey is not configured");
+
         
         _baseUrl = configuration["GroqSettings:BaseUrl"] ?? "https://api.groq.com/openai/v1";
         // Use a model capable of complex JSON instruction following
