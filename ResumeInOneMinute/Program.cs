@@ -29,6 +29,44 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
+// --- Configuration Validation ---
+var requiredConfigs = new Dictionary<string, string>
+{
+    { "ConnectionStrings:PostgreSQL", "ConnectionStrings__PostgreSQL" },
+    { "ConnectionStrings:MongoDB", "ConnectionStrings__MongoDB" },
+    { "JwtSettings:SecretKey", "JwtSettings__SecretKey" },
+    { "GoogleSettings:ClientId", "GoogleSettings__ClientId" },
+    { "GroqSettings:ApiKey", "GroqSettings__ApiKey" },
+    { "Razorpay:KeyId", "Razorpay__KeyId" },
+    { "Razorpay:KeySecret", "Razorpay__KeySecret" },
+    { "CorsSettings:AllowedOrigins", "CorsSettings__AllowedOrigins" }
+};
+
+bool hasAllConfig = true;
+Log.Information("--------------------------------------------------");
+Log.Information("Validating Environment Configurations...");
+
+foreach (var config in requiredConfigs)
+{
+    var value = builder.Configuration[config.Key];
+    if (string.IsNullOrWhiteSpace(value))
+    {
+        Log.Error("CRITICAL MISSING CONFIG: {Key} (Ensure environment variable '{EnvVar}' is set)", config.Key, config.Value);
+        hasAllConfig = false;
+    }
+}
+
+if (!hasAllConfig)
+{
+    Log.Fatal("Application startup failed due to missing configurations. System shutting down.");
+    return; // Stop the application
+}
+
+Log.Information("All required environment configurations found.");
+Log.Information("Active CORS Allowed Origins: {Origins}", builder.Configuration["CorsSettings:AllowedOrigins"]);
+Log.Information("--------------------------------------------------");
+// --------------------------------
+
 // Add services to the container.
 builder.Services.AddControllers();
 
@@ -79,8 +117,7 @@ builder.Services.AddScoped<ISubscriptionService, ResumeInOneMinute.Infrastructur
 // Configure JWT Settings
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = jwtSettings["SecretKey"] 
-    ?? throw new InvalidOperationException("JWT SecretKey not configured");
+var secretKey = jwtSettings["SecretKey"]!;
 
 
 // Add Authentication
@@ -120,11 +157,7 @@ builder.Services.AddMemoryCache();
 
 
 // Add CORS
-string? allowedOrigins = builder.Configuration["CorsSettings:AllowedOrigins"];
-if (string.IsNullOrWhiteSpace(allowedOrigins))
-{
-    allowedOrigins = "http://localhost:4200";
-}
+string allowedOrigins = builder.Configuration["CorsSettings:AllowedOrigins"]!;
 
 var allowedOriginArray = allowedOrigins
     .Split(',', StringSplitOptions.RemoveEmptyEntries)
