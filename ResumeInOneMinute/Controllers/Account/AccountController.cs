@@ -5,6 +5,7 @@ using ResumeInOneMinute.Domain.DTO;
 using ResumeInOneMinute.Domain.Interface;
 using ResumeInOneMinute.Controllers.Super;
 using ResumeInOneMinute.Domain.Model;
+using ResumeInOneMinute.Infrastructure.CommonServices;
 
 namespace ResumeInOneMinute.Controllers.Account;
 
@@ -15,13 +16,30 @@ namespace ResumeInOneMinute.Controllers.Account;
 public class AccountController : SuperController
 {
     private readonly IAccountRepository _accountRepository;
-    private readonly ResumeInOneMinute.Infrastructure.CommonServices.EncryptionHelper _encryptionHelper;
+    private readonly EncryptionHelper _encryptionHelper;
 
-    public AccountController(IAccountRepository accountRepository, ResumeInOneMinute.Infrastructure.CommonServices.EncryptionHelper encryptionHelper)
+    public AccountController(IAccountRepository accountRepository, 
+        EncryptionHelper encryptionHelper)
     {
         _accountRepository = accountRepository;
         _encryptionHelper = encryptionHelper;
     }
+
+    [HttpGet("google/clientid")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetGoogleClientId()
+    {
+        var result = await _accountRepository.GetGoogleClientIdAsync();
+
+        if (!result.Status)
+        {
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
 
     [HttpPost("register")]
     [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]

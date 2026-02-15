@@ -15,4 +15,5 @@ public interface IAccountRepository
     Task<Response<string>> LogoutAsync(long userId);
     Task<Response<UserDto>> UpdateProfileAsync(long userId, ProfileUpdateDto profileUpdateDto);
     Task<Response<AuthResponseDto>> GoogleLoginAsync(GoogleLoginDto googleLoginDto);
+    Task<Response<string>> GetGoogleClientIdAsync();
 }

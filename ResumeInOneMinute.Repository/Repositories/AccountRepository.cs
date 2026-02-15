@@ -9,6 +9,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using ResumeInOneMinute.Infrastructure.CommonServices;
 
 namespace ResumeInOneMinute.Repository.Repositories;
 
@@ -596,6 +597,31 @@ public class AccountRepository : BaseRepository, IAccountRepository
                 Message = $"Google login failed: {ex.Message}",
                 Data = null!
             };
+        }
+    }
+
+    public async Task<Response<string>> GetGoogleClientIdAsync()
+    {
+        try
+        {
+            var clientId = Configuration["GoogleSettings:ClientId"];
+            if (string.IsNullOrEmpty(clientId))
+            {
+                return new Response<string> { Status = false, Message = "Google Client ID not configured" };
+            }
+
+            // Use AesEncryptionHelper for cross-platform encryption (compatible with CryptoJS in Angular)
+            var encryptedClientId = AesEncryptionHelper.Encrypt(clientId);
+            return new Response<string>
+            {
+                Status = true,
+                Message = "Google Client ID retrieved successfully",
+                Data = encryptedClientId
+            };
+        }
+        catch (Exception ex)
+        {
+            return new Response<string> { Status = false, Message = $"Error encrypting Client ID: {ex.Message}" };
         }
     }
 
