@@ -1,12 +1,9 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Asp.Versioning;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ResumeInOneMinute.Domain.Interface;
-using ResumeInOneMinute.Repository.DataContexts;
 using ResumeInOneMinute.Repository.Repositories;
-using System.Security.Claims;
 using System.Text;
 
 using Serilog;
@@ -131,7 +128,7 @@ builder.Services.AddScoped<IGroqService, ResumeInOneMinute.Infrastructure.Servic
 
 // Register Repositories (DbContext is created manually in repository)
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
-builder.Services.AddScoped<IResumeRepository, ResumeInOneMinute.Repository.Repositories.ResumeRepository>();
+builder.Services.AddScoped<IResumeRepository, ResumeRepository>();
 builder.Services.AddScoped<IHtmlTemplateRepository, HtmlTemplateRepository>();
 builder.Services.AddScoped<IBillingRepository, BillingRepository>();
 
