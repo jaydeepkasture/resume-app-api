@@ -271,33 +271,34 @@ public class AccountRepository : BaseRepository, IAccountRepository
         }
     }
 
-    public async Task<Response<AuthResponseDto>> RefreshTokenAsync(RefreshTokenDto tokenDto)
+    public async Task<Response<AuthResponseDto>> RefreshTokenAsync(string accessToken, string encryptedRefreshToken)
     {
-        string? accessToken = tokenDto.AccessToken;
-        string? refreshToken = tokenDto.RefreshToken;
-
-        var principal = GetPrincipalFromExpiredToken(accessToken);
-        if (principal == null)
+        try
         {
-            return new Response<AuthResponseDto> { Status = false, Message = "Invalid access token or refresh token" };
-        }
-
-        var userIdClaim = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-        if (userIdClaim == null || !long.TryParse(userIdClaim.Value, out long userId))
-        {
-            return new Response<AuthResponseDto> { Status = false, Message = "Invalid user identity" };
-        }
-
-        using (var context = CreateDbContext())
-        {
-            var user = await context.Users
-                .Include(u => u.UserProfile)
-                .FirstOrDefaultAsync(u => u.UserId == userId);
-
-            if (user == null || !VerifyHash(refreshToken, user.RefreshTokenHash ?? Array.Empty<byte>(), user.RefreshTokenSalt ?? Array.Empty<byte>()) || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            string refreshToken = _encryptionHelper.DecryptTemporary(encryptedRefreshToken);
+            
+            var principal = GetPrincipalFromExpiredToken(accessToken);
+            if (principal == null)
             {
                 return new Response<AuthResponseDto> { Status = false, Message = "Invalid access token or refresh token" };
             }
+
+            var userIdClaim = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !long.TryParse(userIdClaim.Value, out long userId))
+            {
+                return new Response<AuthResponseDto> { Status = false, Message = "Invalid user identity" };
+            }
+
+            using (var context = CreateDbContext())
+            {
+                var user = await context.Users
+                    .Include(u => u.UserProfile)
+                    .FirstOrDefaultAsync(u => u.UserId == userId);
+
+                if (user == null || !VerifyHash(refreshToken, user.RefreshTokenHash ?? Array.Empty<byte>(), user.RefreshTokenSalt ?? Array.Empty<byte>()) || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+                {
+                    return new Response<AuthResponseDto> { Status = false, Message = "Invalid access token or refresh token" };
+                }
 
             var newAccessToken = GenerateJwtToken(user);
             var encryptedToken = _encryptionHelper.EncryptPersistent(newAccessToken); // Encrypting the token
@@ -324,16 +325,26 @@ public class AccountRepository : BaseRepository, IAccountRepository
                 CreatedAt = user.CreatedAt
             };
 
+                return new Response<AuthResponseDto>
+                {
+                    Status = true,
+                    Message = "Token refreshed successfully",
+                    Data = new AuthResponseDto
+                    {
+                        Token = encryptedToken,
+                        RefreshToken = newRefreshToken,
+                        User = userDto
+                    }
+                };
+            }
+        }
+        catch (Exception ex)
+        {
             return new Response<AuthResponseDto>
             {
-                Status = true,
-                Message = "Token refreshed successfully",
-                Data = new AuthResponseDto
-                {
-                    Token = encryptedToken,
-                    RefreshToken = newRefreshToken,
-                    User = userDto
-                }
+                Status = false,
+                Message = $"Token refresh failed: {ex.Message}",
+                Data = null!
             };
         }
     }
@@ -352,35 +363,110 @@ public class AccountRepository : BaseRepository, IAccountRepository
                     return new Response<string> { Status = false, Message = "User not found" };
                 }
 
-                // Generate OTP (6 digits)
-                var otp = new Random().Next(100000, 999999).ToString();
+                // Generate Reset Token (Short alphanumeric to fit existing DB column of 10 chars)
+                var token = GenerateSecureToken(32);
                 
-                user.OtpCode = otp;
-                user.OtpExpiryTime = DateTime.UtcNow.AddMinutes(10); // OTP valid for 10 minutes
+                user.ResetToken = token;
+                user.ResetTokenExpiryTime = DateTime.UtcNow.AddHours(1); // Link valid for 1 hour
 
                 await context.SaveChangesAsync();
 
-                // Send OTP via Email
-                await _emailService.SendEmailAsync(user.Email, "Reset Password OTP", $"Your OTP for resetting your password is: {otp}");
+                // Get Frontend URL from configuration
+                var frontendUrl = Configuration["AppSettings:FrontendUrl"] ?? throw new InvalidOperationException("Frontend URL is not configured in environment variables.");
+                var resetLink = $"{frontendUrl}/reset-password?token={token}&email={Uri.EscapeDataString(user.Email)}";
+
+                // Send Reset Link via Email (HTML format)
+                var emailBody = $@"
+                    <div style='font-family: Arial, sans-serif; padding: 20px; color: #333;'>
+                        <h2 style='color: #007bff;'>Reset Your Password</h2>
+                        <p>We received a request to reset your password. Click the button below to proceed:</p>
+                        <div style='margin: 30px 0;'>
+                            <a href='{resetLink}' style='background-color: #007bff; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;'>Reset Password</a>
+                        </div>
+                        <p>This link will expire in 1 hour.</p>
+                        <p>If the button doesn't work, copy and paste this link into your browser:</p>
+                        <p style='color: #666; font-size: 14px;'>{resetLink}</p>
+                        <hr style='border: 0; border-top: 1px solid #eee; margin-top: 30px;'>
+                        <p style='font-size: 12px; color: #999;'>If you did not request a password reset, please ignore this email.</p>
+                    </div>";
+
+                await _emailService.SendEmailAsync(user.Email, "Reset Your Password", emailBody);
 
                 return new Response<string>
                 {
                     Status = true,
-                    Message = "OTP sent to your email",
-                    Data = "OTP Sent"
+                    Message = "Reset link sent to your email",
+                    Data = "Link Sent"
                 };
             }
         }
         catch (Exception ex)
         {
-             return new Response<string> { Status = false, Message = $"Error sending OTP: {ex.Message}" };
+             return new Response<string> { Status = false, Message = $"Error sending reset link: {ex.Message} {(ex.InnerException != null ? ex.InnerException.Message : "")}" };
         }
     }
 
-    public async Task<Response<string>> LogoutAsync(long userId)
+    public async Task<Response<string>> ResetPasswordAsync(ResetPasswordDto resetPasswordDto)
     {
         try
         {
+            using (var context = CreateDbContext())
+            {
+                var normalizedEmail = resetPasswordDto.Email.Trim().ToLower();
+                var user = await context.Users.FirstOrDefaultAsync(u => u.Email == normalizedEmail);
+
+                if (user == null)
+                {
+                    return new Response<string> { Status = false, Message = "User not found" };
+                }
+
+                if (user.ResetToken != resetPasswordDto.Token)
+                {
+                    return new Response<string> { Status = false, Message = "Invalid reset token" };
+                }
+
+                if (user.ResetTokenExpiryTime < DateTime.UtcNow)
+                {
+                    return new Response<string> { Status = false, Message = "Reset token expired" };
+                }
+
+                // Create new password hash
+                CreateHash(resetPasswordDto.Password, out byte[] passwordHash, out byte[] passwordSalt);
+                
+                user.PasswordHash = passwordHash;
+                user.PasswordSalt = passwordSalt;
+                
+                // Clear reset token
+                user.ResetToken = null;
+                user.ResetTokenExpiryTime = null;
+
+                await context.SaveChangesAsync();
+
+                return new Response<string>
+                {
+                    Status = true,
+                    Message = "Password reset successful",
+                    Data = "Password Reset"
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            return new Response<string> { Status = false, Message = $"Error resetting password: {ex.Message}" };
+        }
+    }
+
+
+    public async Task<Response<string>> LogoutAsync(ClaimsPrincipal userPrincipal)
+    {
+        try
+        {
+            var userIdClaim = userPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !long.TryParse(userIdClaim.Value, out long userId))
+            {
+                return new Response<string> { Status = false, Message = "Invalid user identity" };
+            }
+
             using (var context = CreateDbContext())
             {
                 var user = await context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
@@ -409,10 +495,16 @@ public class AccountRepository : BaseRepository, IAccountRepository
         }
     }
 
-    public async Task<Response<UserDto>> UpdateProfileAsync(long userId, ProfileUpdateDto profileUpdateDto)
+    public async Task<Response<UserDto>> UpdateProfileAsync(ClaimsPrincipal userPrincipal, ProfileUpdateDto profileUpdateDto)
     {
         try
         {
+            var userIdClaim = userPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !long.TryParse(userIdClaim.Value, out long userId))
+            {
+                return new Response<UserDto> { Status = false, Message = "Invalid user identity", Data = null! };
+            }
+
             using (var context = CreateDbContext())
             {
                 var user = await context.Users
@@ -701,6 +793,14 @@ public class AccountRepository : BaseRepository, IAccountRepository
         }
 
         return principal;
+    }
+
+    private string GenerateSecureToken(int length)
+    {
+        using var rng = RandomNumberGenerator.Create();
+        var bytes = new byte[length];
+        rng.GetBytes(bytes);
+        return Convert.ToHexString(bytes).ToLower();
     }
 
     #endregion

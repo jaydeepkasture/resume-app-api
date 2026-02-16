@@ -35,10 +35,10 @@ public class User
 
     public DateTime? RefreshTokenExpiryTime { get; set; }
 
-    [MaxLength(10)]
-    public string? OtpCode { get; set; }
+    [MaxLength(255)]
+    public string? ResetToken { get; set; }
 
-    public DateTime? OtpExpiryTime { get; set; }
+    public DateTime? ResetTokenExpiryTime { get; set; }
 
     // Navigation property
     public virtual UserProfile? UserProfile { get; set; }

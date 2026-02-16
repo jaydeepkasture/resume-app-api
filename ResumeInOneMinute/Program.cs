@@ -39,7 +39,12 @@ var requiredConfigs = new Dictionary<string, string>
     { "GroqSettings:ApiKey", "GroqSettings__ApiKey" },
     { "Razorpay:KeyId", "Razorpay__KeyId" },
     { "Razorpay:KeySecret", "Razorpay__KeySecret" },
-    { "CorsSettings:AllowedOrigins", "CorsSettings__AllowedOrigins" }
+    { "AwsSettings:Region", "AwsSettings__Region" },
+    { "AwsSettings:AccessKey", "AwsSettings__AccessKey" },
+    { "AwsSettings:SecretKey", "AwsSettings__SecretKey" },
+    { "AwsSettings:SenderEmail", "AwsSettings__SenderEmail" },
+    { "CorsSettings:AllowedOrigins", "CorsSettings__AllowedOrigins" },
+    { "AppSettings:FrontendUrl", "AppSettings__FrontendUrl" }
 };
 
 bool hasAllConfig = true;

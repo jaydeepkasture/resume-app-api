@@ -4,7 +4,6 @@ using Asp.Versioning;
 using ResumeInOneMinute.Domain.DTO;
 using ResumeInOneMinute.Domain.Interface;
 using ResumeInOneMinute.Controllers.Super;
-using ResumeInOneMinute.Domain.Model;
 using ResumeInOneMinute.Infrastructure.CommonServices;
 
 namespace ResumeInOneMinute.Controllers.Account;
@@ -128,23 +127,7 @@ public class AccountController : SuperController
             return BadRequest(new { Status = false, Message = "Access token (Header) and Refresh token (Cookie) are required" });
         }
 
-        string refreshToken;
-        try
-        {
-            refreshToken = _encryptionHelper.DecryptTemporary(encryptedRefreshToken);
-        }
-        catch
-        {
-            return BadRequest(new { Status = false, Message = "Invalid refresh token" });
-        }
-
-        var newTokenDto = new RefreshTokenDto
-        {
-            AccessToken = accessToken,
-            RefreshToken = refreshToken
-        };
-
-        var result = await _accountRepository.RefreshTokenAsync(newTokenDto);
+        var result = await _accountRepository.RefreshTokenAsync(accessToken, encryptedRefreshToken);
 
         if (!result.Status)
         {
@@ -177,19 +160,33 @@ public class AccountController : SuperController
         return Ok(result);
     }
 
+    [HttpPost("reset-password")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(new { Status = false, Message = "Validation failed", Data = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
+        }
+
+        var result = await _accountRepository.ResetPasswordAsync(resetPasswordDto);
+
+        if (!result.Status)
+        {
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
     [Authorize]
     [HttpPost("logout")]
     [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(object), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Logout()
     {
-        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-        if (userIdClaim == null || !long.TryParse(userIdClaim.Value, out long userId))
-        {
-            return Unauthorized(new { Status = false, Message = "Invalid user identity" });
-        }
-
-        var result = await _accountRepository.LogoutAsync(userId);
+        var result = await _accountRepository.LogoutAsync(User);
         
         // Clear Refresh Token Cookie
         Response.Cookies.Delete("refreshToken");
@@ -214,13 +211,7 @@ public class AccountController : SuperController
             return BadRequest(new { Status = false, Message = "Validation failed", Data = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
         }
 
-        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-        if (userIdClaim == null || !long.TryParse(userIdClaim.Value, out long userId))
-        {
-            return Unauthorized(new { Status = false, Message = "Invalid user identity" });
-        }
-
-        var result = await _accountRepository.UpdateProfileAsync(userId, profileUpdateDto);
+        var result = await _accountRepository.UpdateProfileAsync(User, profileUpdateDto);
 
         if (!result.Status)
         {

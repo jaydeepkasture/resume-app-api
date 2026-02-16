@@ -398,3 +398,6 @@ WHERE pc.master_type = 'PLAN_CODE'
 /* ============================================================
    END OF SCRIPT
    ============================================================ */
+-- Add reset_token and reset_token_expiry_time
+ALTER TABLE auth.users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255);
+ALTER TABLE auth.users ADD COLUMN IF NOT EXISTS reset_token_expiry_time TIMESTAMPTZ;
