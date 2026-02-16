@@ -39,13 +39,27 @@ var requiredConfigs = new Dictionary<string, string>
     { "GroqSettings:ApiKey", "GroqSettings__ApiKey" },
     { "Razorpay:KeyId", "Razorpay__KeyId" },
     { "Razorpay:KeySecret", "Razorpay__KeySecret" },
-    { "AwsSettings:Region", "AwsSettings__Region" },
-    { "AwsSettings:AccessKey", "AwsSettings__AccessKey" },
-    { "AwsSettings:SecretKey", "AwsSettings__SecretKey" },
-    { "AwsSettings:SenderEmail", "AwsSettings__SenderEmail" },
     { "CorsSettings:AllowedOrigins", "CorsSettings__AllowedOrigins" },
-    { "AppSettings:FrontendUrl", "AppSettings__FrontendUrl" }
+    { "AppSettings:FrontendUrl", "AppSettings__FrontendUrl" },
+    { "EmailSettings:Provider", "EmailSettings__Provider" }
 };
+
+// Add AWS or SMTP based on provider
+var emailProvider = builder.Configuration["EmailSettings:Provider"];
+if (emailProvider == "aws_ses")
+{
+    requiredConfigs.Add("AwsSettings:Region", "AwsSettings__Region");
+    requiredConfigs.Add("AwsSettings:AccessKey", "AwsSettings__AccessKey");
+    requiredConfigs.Add("AwsSettings:SecretKey", "AwsSettings__SecretKey");
+    requiredConfigs.Add("AwsSettings:SenderEmail", "AwsSettings__SenderEmail");
+}
+else if (emailProvider == "google_workspace")
+{
+    requiredConfigs.Add("SmtpSettings:Host", "SmtpSettings__Host");
+    requiredConfigs.Add("SmtpSettings:Port", "SmtpSettings__Port");
+    requiredConfigs.Add("SmtpSettings:Username", "SmtpSettings__Username");
+    requiredConfigs.Add("SmtpSettings:Password", "SmtpSettings__Password");
+}
 
 bool hasAllConfig = true;
 Log.Information("--------------------------------------------------");
@@ -101,7 +115,16 @@ builder.Services.AddSingleton<IMongoDbService, ResumeInOneMinute.Infrastructure.
 
 // Register Common Services
 builder.Services.AddSingleton<ResumeInOneMinute.Infrastructure.CommonServices.EncryptionHelper>();
-builder.Services.AddScoped<IEmailService, ResumeInOneMinute.Infrastructure.Services.EmailService>();
+
+if (emailProvider == "google_workspace")
+{
+    builder.Services.AddScoped<IEmailService, ResumeInOneMinute.Infrastructure.Services.SmtpEmailService>();
+}
+else
+{
+    builder.Services.AddScoped<IEmailService, ResumeInOneMinute.Infrastructure.Services.AwsSesEmailService>();
+}
+
 // Register Composite AI Service (Groq with Ollama fallback)
 builder.Services.AddScoped<IOllamaService, ResumeInOneMinute.Infrastructure.Services.CompositeAIService>();
 builder.Services.AddScoped<IGroqService, ResumeInOneMinute.Infrastructure.Services.GroqService>();

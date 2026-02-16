@@ -6,14 +6,14 @@ using ResumeInOneMinute.Domain.Interface;
 
 namespace ResumeInOneMinute.Infrastructure.Services;
 
-public class EmailService : IEmailService
+public class AwsSesEmailService : IEmailService
 {
     private readonly string _region;
     private readonly string _accessKey;
     private readonly string _secretKey;
     private readonly string _senderEmail;
 
-    public EmailService(IConfiguration configuration)
+    public AwsSesEmailService(IConfiguration configuration)
     {
         _region = configuration["AwsSettings:Region"] ?? throw new InvalidOperationException("AWS SES Region is not configured in environment variables.");
         _accessKey = configuration["AwsSettings:AccessKey"] ?? throw new InvalidOperationException("AWS SES AccessKey is not configured in environment variables.");
