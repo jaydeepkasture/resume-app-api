@@ -208,10 +208,10 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "Resume In One Minute API",
+        Title = "1mincv.com API",
         Version = "v1",
         Description = @"
-## Resume In One Minute API Documentation
+## 1mincv.com API Documentation
 
 A comprehensive API for managing user authentication and resume generation.
 
@@ -247,9 +247,9 @@ Authorization: Bearer {your-token}
 ",
         Contact = new OpenApiContact
         {
-            Name = "Resume In One Minute Support",
-            Email = "support@resumeinone.com",
-            Url = new Uri("https://github.com/resumeinone")
+            Name = "1mincv.com Support",
+            Email = "support@1mincv.com",
+            Url = new Uri("https://1mincv.com")
         },
         License = new OpenApiLicense
         {
@@ -321,11 +321,11 @@ if (app.Environment.IsDevelopment())
     
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Resume In One Minute API v1");
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "1mincv.com API v1");
         c.RoutePrefix = string.Empty; // Set Swagger UI at app's root
         
         // Enhanced UI settings
-        c.DocumentTitle = "Resume In One Minute API Documentation";
+        c.DocumentTitle = "1mincv.com API Documentation";
         c.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.List);
         c.DefaultModelsExpandDepth(2);
         c.DefaultModelExpandDepth(2);
@@ -345,9 +345,9 @@ else
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Resume In One Minute API v1");
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "1mincv.com API v1");
         c.RoutePrefix = "api-docs";
-        c.DocumentTitle = "Resume In One Minute API Documentation";
+        c.DocumentTitle = "1mincv.com API Documentation";
     });
 }
 

@@ -41,7 +41,7 @@ public class SmtpEmailService : IEmailService
 
         using var mailMessage = new MailMessage
         {
-            From = new MailAddress(_senderEmail, "Resume In One Minute"),
+            From = new MailAddress(_senderEmail, "1mincv.com"),
             Subject = subject,
             Body = body,
             IsBodyHtml = true

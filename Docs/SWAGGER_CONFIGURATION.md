@@ -1,7 +1,7 @@
 # Swagger Configuration Guide
 
 ## Overview
-The Resume In One Minute API now has a fully configured Swagger/OpenAPI documentation interface with enhanced features for better developer experience.
+The 1mincv.com API now has a fully configured Swagger/OpenAPI documentation interface with enhanced features for better developer experience.
 
 ## Access Swagger UI
 
@@ -134,9 +134,9 @@ builder.Services.AddSwaggerGen(c =>
 ```csharp
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Resume In One Minute API v1");
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "1mincv.com API v1");
     c.RoutePrefix = string.Empty;
-    c.DocumentTitle = "Resume In One Minute API Documentation";
+    c.DocumentTitle = "1mincv.com API Documentation";
     c.DocExpansion(DocExpansion.List);
     c.DisplayRequestDuration();
     c.EnableDeepLinking();
@@ -322,7 +322,7 @@ dotnet add package Swashbuckle.AspNetCore.Annotations --version 6.6.2
 To add API versioning:
 ```csharp
 c.SwaggerDoc("v2", new OpenApiInfo { 
-    Title = "Resume In One Minute API", 
+    Title = "1mincv.com API", 
     Version = "v2" 
 });
 ```

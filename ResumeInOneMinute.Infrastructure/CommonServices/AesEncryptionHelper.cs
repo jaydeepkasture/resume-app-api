@@ -9,7 +9,7 @@ namespace ResumeInOneMinute.Infrastructure.CommonServices;
 public static class AesEncryptionHelper
 {
     // MUST be 32 characters for AES-256
-    private const string KeyString = "ResumeInOneMinute_AES_Key_2026_!"; 
+    private const string KeyString = "1mincv.com_AES_Key_2026_!*******"; 
     // MUST be 16 characters
     private const string IvString = "1234567890123456"; 
 

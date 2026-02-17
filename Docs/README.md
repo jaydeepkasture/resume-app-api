@@ -1,4 +1,4 @@
-# Resume In One Minute API
+# 1mincv.com API
 
 ## Overview
 This is a comprehensive ASP.NET Core Web API with user authentication, authorization, rate limiting, caching, and audit logging.
@@ -317,8 +317,8 @@ ResumeInOneMinute/
 {
   "JwtSettings": {
     "SecretKey": "YourSuperSecretKeyForJWTTokenGeneration123456789!@#",
-    "Issuer": "ResumeInOneMinute",
-    "Audience": "ResumeInOneMinuteUsers",
+    "Issuer": "1mincv.com",
+    "Audience": "1mincv.comUsers",
     "ExpirationInMinutes": 60
   }
 }

@@ -1,7 +1,7 @@
 # Authentication API Implementation
 
 ## Overview
-This document describes the complete implementation of the Login and Registration API for the Resume In One Minute application.
+This document describes the complete implementation of the Login and Registration API for the 1mincv.com application.
 
 ## Architecture
 
@@ -172,8 +172,8 @@ CREATE TABLE auth.user_profiles (
   },
   "JwtSettings": {
     "SecretKey": "YourSuperSecretKeyForJWTTokenGeneration123456789!@#",
-    "Issuer": "ResumeInOneMinute",
-    "Audience": "ResumeInOneMinuteUsers",
+    "Issuer": "1mincv.com",
+    "Audience": "1mincv.comUsers",
     "ExpirationInMinutes": 60
   }
 }
