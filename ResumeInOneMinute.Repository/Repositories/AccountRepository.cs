@@ -59,7 +59,7 @@ public class AccountRepository : BaseRepository, IAccountRepository
                         IsActive = true,
                         RefreshTokenHash = refreshTokenHash,
                         RefreshTokenSalt = refreshTokenSalt,
-                        RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7),
+                        RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(Convert.ToDouble(Configuration["JwtSettings:RefreshTokenExpirationInDays"] ?? "7")),
                         CreatedAt = DateTime.UtcNow
                     };
 
@@ -109,7 +109,7 @@ public class AccountRepository : BaseRepository, IAccountRepository
                     var authResponse = new AuthResponseDto
                     {
                         Token = encryptedToken,
-                        RefreshToken = refreshToken,
+                        RefreshToken = _encryptionHelper.EncryptTemporary(refreshToken),
                         User = userDto
                     };
 
@@ -196,7 +196,7 @@ public class AccountRepository : BaseRepository, IAccountRepository
                 CreateHash(refreshToken, out byte[] refreshTokenHash, out byte[] refreshTokenSalt);
                 user.RefreshTokenHash = refreshTokenHash;
                 user.RefreshTokenSalt = refreshTokenSalt;
-                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(Convert.ToDouble(Configuration["JwtSettings:RefreshTokenExpirationInDays"] ?? "7"));
                 
                 await context.SaveChangesAsync();
 
@@ -220,7 +220,7 @@ public class AccountRepository : BaseRepository, IAccountRepository
                 var authResponse = new AuthResponseDto
                 {
                     Token = encryptedToken,
-                    RefreshToken = refreshToken,
+                    RefreshToken = _encryptionHelper.EncryptTemporary(refreshToken),
                     User = userDto
                 };
 
@@ -309,7 +309,7 @@ public class AccountRepository : BaseRepository, IAccountRepository
             user.RefreshTokenHash = newRefreshTokenHash;
             user.RefreshTokenSalt = newRefreshTokenSalt;
             // Configurable expiry, e.g., 7 days
-            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7); 
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(Convert.ToDouble(Configuration["JwtSettings:RefreshTokenExpirationInDays"] ?? "7")); 
             
             await context.SaveChangesAsync();
 
@@ -332,7 +332,7 @@ public class AccountRepository : BaseRepository, IAccountRepository
                     Data = new AuthResponseDto
                     {
                         Token = encryptedToken,
-                        RefreshToken = newRefreshToken,
+                        RefreshToken = _encryptionHelper.EncryptTemporary(newRefreshToken),
                         User = userDto
                     }
                 };
@@ -600,7 +600,7 @@ public class AccountRepository : BaseRepository, IAccountRepository
                                 IsActive = true,
                                 RefreshTokenHash = refreshTokenHash,
                                 RefreshTokenSalt = refreshTokenSalt,
-                                RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7),
+                                RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(Convert.ToDouble(Configuration["JwtSettings:RefreshTokenExpirationInDays"] ?? "7")),
                                 CreatedAt = DateTime.UtcNow
                             };
 
@@ -643,7 +643,7 @@ public class AccountRepository : BaseRepository, IAccountRepository
 
                     user.RefreshTokenHash = refreshTokenHash;
                     user.RefreshTokenSalt = refreshTokenSalt;
-                    user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+                    user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(Convert.ToDouble(Configuration["JwtSettings:RefreshTokenExpirationInDays"] ?? "7"));
                     user.UpdatedAt = DateTime.UtcNow;
 
                     await context.SaveChangesAsync();
@@ -671,7 +671,7 @@ public class AccountRepository : BaseRepository, IAccountRepository
                     Data = new AuthResponseDto
                     {
                         Token = encryptedToken,
-                        RefreshToken = refreshToken,
+                        RefreshToken = _encryptionHelper.EncryptTemporary(refreshToken),
                         User = userDto
                     }
                 };
