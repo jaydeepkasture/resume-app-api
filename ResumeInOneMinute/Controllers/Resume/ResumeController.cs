@@ -34,7 +34,7 @@ public class ResumeController : SuperController
     [HttpPost("chat/create")]
     [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> CreateChatSession([FromBody] CreateChatSessionDto request)
+    public async Task<IActionResult> CreateChatSession([FromBody] CreateChatSessionDto request, [FromQuery] bool isEmptyTemplate = false)
     {
         var userId = GetUserId();
         if (userId == 0)
@@ -76,7 +76,7 @@ public class ResumeController : SuperController
             Skills = new List<string>()
         };
 
-        var result = await _resumeRepository.CreateChatSessionAsync(userId, request, initialResume);
+        var result = await _resumeRepository.CreateChatSessionAsync(userId, request, initialResume, isEmptyTemplate);
         return result.Status ? Ok(result) : BadRequest(result);
     }
 

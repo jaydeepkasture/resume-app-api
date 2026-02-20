@@ -249,7 +249,7 @@ public class ResumeRepository : IResumeRepository
 
     #region Chat-Based Enhancement Methods
 
-    public async Task<Response<ChatSessionSummaryDto>> CreateChatSessionAsync(long userId, CreateChatSessionDto request, ResumeDto initialResume)
+    public async Task<Response<ChatSessionSummaryDto>> CreateChatSessionAsync(long userId, CreateChatSessionDto request, ResumeDto initialResume, bool isEmptyTemplate = false)
     {
         try
         {
@@ -280,19 +280,22 @@ public class ResumeRepository : IResumeRepository
 
             await _chatSessionsCollection.InsertOneAsync(chatSession);
 
-            // Fetch master resume if exists to merge with basic info
-            var masterResume = await _resumeCollection.Find(r => r.UserId == userId).FirstOrDefaultAsync();
-            if (masterResume?.ResumeData != null)
+            // Fetch master resume if exists to merge with basic info - Skip if isEmptyTemplate is requested
+            if (!isEmptyTemplate)
             {
-                var mergedResume = masterResume.ResumeData;
-                // Override with current account info from controller
-                mergedResume.Name = initialResume.Name;
-                mergedResume.Email = initialResume.Email;
-                if (!string.IsNullOrWhiteSpace(initialResume.PhoneNo))
+                var masterResume = await _resumeCollection.Find(r => r.UserId == userId).FirstOrDefaultAsync();
+                if (masterResume?.ResumeData != null)
                 {
-                    mergedResume.PhoneNo = initialResume.PhoneNo;
+                    var mergedResume = masterResume.ResumeData;
+                    // Override with current account info from controller
+                    mergedResume.Name = initialResume.Name;
+                    mergedResume.Email = initialResume.Email;
+                    if (!string.IsNullOrWhiteSpace(initialResume.PhoneNo))
+                    {
+                        mergedResume.PhoneNo = initialResume.PhoneNo;
+                    }
+                    initialResume = mergedResume;
                 }
-                initialResume = mergedResume;
             }
 
             // If initial resume is provided, create the first history entry
