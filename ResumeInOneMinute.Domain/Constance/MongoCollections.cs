@@ -32,6 +32,11 @@ public static class MongoCollections
     public const string HtmlTemplates = "html_templates";
     
     /// <summary>
+    /// Collection for storing contact us messages
+    /// </summary>
+    public const string ContactMessages = "contact_messages";
+
+    /// <summary>
     /// Collection for storing user master resumes
     /// </summary>
     public const string Resume = "resume";

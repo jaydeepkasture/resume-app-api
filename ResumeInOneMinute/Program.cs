@@ -131,6 +131,7 @@ builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IResumeRepository, ResumeRepository>();
 builder.Services.AddScoped<IHtmlTemplateRepository, HtmlTemplateRepository>();
 builder.Services.AddScoped<IBillingRepository, BillingRepository>();
+builder.Services.AddScoped<IContactRepository, ContactRepository>();
 
 // Register Services
 builder.Services.AddScoped<IRazorpayService, ResumeInOneMinute.Infrastructure.Services.RazorpayService>();
