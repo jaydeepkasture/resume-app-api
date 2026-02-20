@@ -78,10 +78,14 @@ public class ResumeRepository : IResumeRepository
         }
         catch (Exception ex)
         {
+            var userMessage = ex.Message.Contains("temporarily unavailable") 
+                ? ex.Message 
+                : $"Failed to enhance resume: {ex.Message}";
+
             return new Response<ResumeEnhancementResponseDto>
             {
                 Status = false,
-                Message = $"Failed to enhance resume: {ex.Message}",
+                Message = userMessage,
                 Data = null!
             };
         }
@@ -507,10 +511,14 @@ public class ResumeRepository : IResumeRepository
         }
         catch (Exception ex)
         {
+            var userMessage = ex.Message.Contains("temporarily unavailable") 
+                ? ex.Message 
+                : $"Failed to process chat enhancement: {ex.Message}";
+
             return new Response<ChatEnhancementResponseDto>
             {
                 Status = false,
-                Message = $"Failed to process chat enhancement: {ex.Message}",
+                Message = userMessage,
                 Data = null!
             };
         }
