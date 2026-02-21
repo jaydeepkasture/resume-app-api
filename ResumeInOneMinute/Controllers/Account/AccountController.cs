@@ -232,7 +232,7 @@ public class AccountController : SuperController
             Expires = DateTime.UtcNow.AddDays(7)
         };
 
-        var encryptedToken = _encryptionHelper.EncryptTemporary(refreshToken);
-        Response.Cookies.Append("refreshToken", encryptedToken, cookieOptions);
+        // The token coming from the repository is already encrypted using EncryptTemporary
+        Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
     }
 }

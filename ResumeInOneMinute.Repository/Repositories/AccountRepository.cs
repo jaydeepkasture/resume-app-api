@@ -275,18 +275,35 @@ public class AccountRepository : BaseRepository, IAccountRepository
     {
         try
         {
-            string refreshToken = _encryptionHelper.DecryptTemporary(encryptedRefreshToken);
+            string refreshToken;
+            try 
+            {
+                refreshToken = _encryptionHelper.DecryptTemporary(encryptedRefreshToken);
+            }
+            catch (Exception)
+            {
+                return new Response<AuthResponseDto> { Status = false, Message = "Refresh token decryption failed. Please login again." };
+            }
             
-            var principal = GetPrincipalFromExpiredToken(accessToken);
+            ClaimsPrincipal? principal;
+            try 
+            {
+                principal = GetPrincipalFromExpiredToken(accessToken);
+            }
+            catch (Exception ex)
+            {
+                return new Response<AuthResponseDto> { Status = false, Message = $"Access token validation failed: {ex.Message}" };
+            }
+
             if (principal == null)
             {
-                return new Response<AuthResponseDto> { Status = false, Message = "Invalid access token or refresh token" };
+                return new Response<AuthResponseDto> { Status = false, Message = "Could not verify access token identity." };
             }
 
             var userIdClaim = principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !long.TryParse(userIdClaim.Value, out long userId))
             {
-                return new Response<AuthResponseDto> { Status = false, Message = "Invalid user identity" };
+                return new Response<AuthResponseDto> { Status = false, Message = "User ID claim missing in token." };
             }
 
             using (var context = CreateDbContext())
@@ -295,9 +312,24 @@ public class AccountRepository : BaseRepository, IAccountRepository
                     .Include(u => u.UserProfile)
                     .FirstOrDefaultAsync(u => u.UserId == userId);
 
-                if (user == null || !VerifyHash(refreshToken, user.RefreshTokenHash ?? Array.Empty<byte>(), user.RefreshTokenSalt ?? Array.Empty<byte>()) || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+                if (user == null)
                 {
-                    return new Response<AuthResponseDto> { Status = false, Message = "Invalid access token or refresh token" };
+                    return new Response<AuthResponseDto> { Status = false, Message = "User associated with token not found." };
+                }
+
+                if (user.RefreshTokenHash == null || user.RefreshTokenSalt == null)
+                {
+                    return new Response<AuthResponseDto> { Status = false, Message = "No refresh token found in database for this user." };
+                }
+
+                if (!VerifyHash(refreshToken, user.RefreshTokenHash, user.RefreshTokenSalt))
+                {
+                    return new Response<AuthResponseDto> { Status = false, Message = "Refresh token mismatch. Please login again." };
+                }
+
+                if (user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+                {
+                    return new Response<AuthResponseDto> { Status = false, Message = "Refresh token has expired. Please login again." };
                 }
 
             var newAccessToken = GenerateJwtToken(user);
@@ -773,23 +805,40 @@ public class AccountRepository : BaseRepository, IAccountRepository
 
     private ClaimsPrincipal? GetPrincipalFromExpiredToken(string? token)
     {
+        if (string.IsNullOrEmpty(token)) return null;
+
         var jwtSettings = Configuration.GetSection("JwtSettings");
         var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not configured");
 
         var tokenValidationParameters = new TokenValidationParameters
         {
-            ValidateAudience = false,
-            ValidateIssuer = false,
+            ValidateAudience = true,
+            ValidAudience = jwtSettings["Audience"],
+            ValidateIssuer = true,
+            ValidIssuer = jwtSettings["Issuer"],
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
-            ValidateLifetime = false // Allow expired tokens here
+            ValidateLifetime = false, // We allow expired tokens here
+            ClockSkew = TimeSpan.Zero
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();
-        var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
-        if (securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha512, StringComparison.InvariantCultureIgnoreCase))
+        
+        // We use ValidateToken but wrap it in more careful logic
+        SecurityToken securityToken;
+        var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out securityToken);
+        
+        if (securityToken is not JwtSecurityToken jwtSecurityToken)
         {
-            throw new SecurityTokenException("Invalid token");
+            throw new SecurityTokenException("Token is not a valid JWT");
+        }
+
+        // Check algorithm - handle both "HS512" and "HmacSha512" variations
+        var alg = jwtSecurityToken.Header.Alg;
+        if (!alg.Equals(SecurityAlgorithms.HmacSha512, StringComparison.InvariantCultureIgnoreCase) && 
+            !alg.Equals(SecurityAlgorithms.HmacSha512Signature, StringComparison.InvariantCultureIgnoreCase))
+        {
+            throw new SecurityTokenException($"Invalid security algorithm: {alg}");
         }
 
         return principal;
