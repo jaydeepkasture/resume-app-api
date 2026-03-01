@@ -11,7 +11,7 @@ namespace ResumeInOneMinute.Infrastructure.Services;
 /// AI Service that uses Groq API with configurable retries.
 /// Ollama fallback has been removed as per user request.
 /// </summary>
-public class CompositeAIService : IOllamaService
+public class CompositeAIService : ICompositeAIService
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<CompositeAIService> _logger;
@@ -270,7 +270,7 @@ Return ONLY raw JSON object. NO markdown code blocks, NO text before/after.
       ""position"": ""string"",
       ""from"": ""string"",
       ""to"": ""string"",
-      ""description"": ""string""
+      ""description"": [""string""]
     }}
   ],
   ""skills"": [""string""],

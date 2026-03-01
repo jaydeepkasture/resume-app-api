@@ -19,6 +19,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<SubscriptionPayment> SubscriptionPayments { get; set; }
     public DbSet<PlanBenefit> PlanBenefits { get; set; }
     public DbSet<PlanBenefitMap> PlanBenefitMaps { get; set; }
+    public DbSet<ResumeTemplate> ResumeTemplates { get; set; }
+    public DbSet<UserResume> UserResumes { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -163,5 +166,32 @@ public class ApplicationDbContext : DbContext
             new PlanBenefitMap { MapId = 4, PlanId = 2, BenefitId = 2, BenefitValue = "300" },
             new PlanBenefitMap { MapId = 6, PlanId = 2, BenefitId = 3, BenefitValue = "10000" }
         );
+
+        // Resume Templates
+        modelBuilder.Entity<ResumeTemplate>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.SectionOrder).HasColumnType("jsonb");
+            entity.Property(e => e.Theme).HasColumnType("jsonb");
+            entity.Property(e => e.Decorations).HasColumnType("jsonb");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(NOW() AT TIME ZONE 'UTC')");
+        });
+
+        // User Resumes
+        modelBuilder.Entity<UserResume>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ResumeData).HasColumnType("jsonb");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(NOW() AT TIME ZONE 'UTC')");
+
+            entity.HasOne(e => e.Template)
+                  .WithMany()
+                  .HasForeignKey(e => e.TemplateId);
+            
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId);
+        });
     }
 }
+

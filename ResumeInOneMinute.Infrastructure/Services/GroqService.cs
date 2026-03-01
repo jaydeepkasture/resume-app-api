@@ -124,7 +124,7 @@ REQUIRED JSON FORMAT:
       ""position"": ""string"",
       ""from"": ""string"",
       ""to"": ""string"",
-      ""description"": ""string""
+      ""description"": [""string""]
     }}
   ],
   ""skills"": [""string""],

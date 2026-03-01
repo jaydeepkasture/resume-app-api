@@ -40,4 +40,9 @@ public static class MongoCollections
     /// Collection for storing user master resumes
     /// </summary>
     public const string Resume = "resume";
+
+    /// <summary>
+    /// Collection for storing SDUI layouts
+    /// </summary>
+    public const string Layouts = "layouts";
 }

@@ -2,7 +2,7 @@ using ResumeInOneMinute.Domain.DTO;
 
 namespace ResumeInOneMinute.Domain.Interface;
 
-public interface IOllamaService
+public interface ICompositeAIService
 {
     Task<ResumeDto> EnhanceResumeAsync(ResumeDto originalResume, string enhancementInstruction);
     

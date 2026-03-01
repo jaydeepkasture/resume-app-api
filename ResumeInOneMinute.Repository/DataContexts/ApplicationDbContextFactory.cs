@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
-
+using Npgsql;
 
 namespace ResumeInOneMinute.Repository.DataContexts;
 
@@ -26,7 +26,11 @@ public class ApplicationDbContextFactory : IDesignTimeDbContextFactory<Applicati
 
         var connectionString = configuration.GetConnectionString("PostgreSQL");
 
-        optionsBuilder.UseNpgsql(connectionString)
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
+        dataSourceBuilder.EnableDynamicJson();
+        var dataSource = dataSourceBuilder.Build();
+
+        optionsBuilder.UseNpgsql(dataSource)
                       .UseSnakeCaseNamingConvention();
 
 

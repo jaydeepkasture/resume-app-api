@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using ResumeInOneMinute.Domain.Interface;
 using ResumeInOneMinute.Domain.Model;
 using ResumeInOneMinute.Repository.DataContexts;
+using ResumeInOneMinute.Repository.Repositories.Base;
 
 namespace ResumeInOneMinute.Repository.Repositories;
 

@@ -10,6 +10,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using ResumeInOneMinute.Infrastructure.CommonServices;
+using ResumeInOneMinute.Repository.Repositories.Base;
 
 namespace ResumeInOneMinute.Repository.Repositories;
 

@@ -122,20 +122,26 @@ else
     builder.Services.AddScoped<IEmailService, ResumeInOneMinute.Infrastructure.Services.AwsSesEmailService>();
 }
 
-// Register Composite AI Service (Groq with Ollama fallback)
-builder.Services.AddScoped<IOllamaService, ResumeInOneMinute.Infrastructure.Services.CompositeAIService>();
+// Register Composite AI Service
+builder.Services.AddScoped<ICompositeAIService, ResumeInOneMinute.Infrastructure.Services.CompositeAIService>();
 builder.Services.AddScoped<IGroqService, ResumeInOneMinute.Infrastructure.Services.GroqService>();
 
 // Register Repositories (DbContext is created manually in repository)
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IResumeRepository, ResumeRepository>();
 builder.Services.AddScoped<IHtmlTemplateRepository, HtmlTemplateRepository>();
+builder.Services.AddScoped<IResumeTemplateRepository, ResumeTemplateRepository>();
+builder.Services.AddScoped<IResumeSqlRepository, ResumeSqlRepository>();
 builder.Services.AddScoped<IBillingRepository, BillingRepository>();
+
+builder.Services.AddScoped<ILayoutRepository, LayoutRepository>();
 builder.Services.AddScoped<IContactRepository, ContactRepository>();
 
 // Register Services
 builder.Services.AddScoped<IRazorpayService, ResumeInOneMinute.Infrastructure.Services.RazorpayService>();
 builder.Services.AddScoped<ISubscriptionService, ResumeInOneMinute.Infrastructure.Services.SubscriptionService>();
+builder.Services.AddScoped<IThemeService, ResumeInOneMinute.Infrastructure.Services.ThemeService>();
+builder.Services.AddScoped<IPdfService, ResumeInOneMinute.Infrastructure.Services.PdfService>();
 
 // Configure MongoDB Settings
 // Handled by MongoDbService via IConfiguration
@@ -381,6 +387,11 @@ app.UseMiddleware<ResumeInOneMinute.Middleware.RateLimitingMiddleware>();
 
 app.MapControllers();
 
+using (var scope = app.Services.CreateScope())
+{
+    var layoutRepo = scope.ServiceProvider.GetRequiredService<ILayoutRepository>();
+    await layoutRepo.SeedDefaultLayoutAsync();
+}
 
 app.Run();
 

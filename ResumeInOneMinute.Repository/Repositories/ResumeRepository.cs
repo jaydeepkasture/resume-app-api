@@ -17,16 +17,16 @@ public class ResumeRepository : IResumeRepository
     private readonly IMongoCollection<ChatSession> _chatSessionsCollection;
     private readonly IMongoCollection<HtmlTemplate> _htmlTemplateCollection;
     private readonly IMongoCollection<Resume> _resumeCollection;
-    private readonly IOllamaService _ollamaService;
+    private readonly ICompositeAIService _compositeAiService;
     private readonly IGroqService _groqService;
 
-    public ResumeRepository(IMongoDbService mongoDbService, IOllamaService ollamaService, IGroqService groqService)
+    public ResumeRepository(IMongoDbService mongoDbService, ICompositeAIService compositeAiService, IGroqService groqService)
     {
         _historyCollection = mongoDbService.GetCollection<ResumeEnhancementHistory>(MongoCollections.ResumeEnhancementHistory);
         _chatSessionsCollection = mongoDbService.GetCollection<ChatSession>(MongoCollections.ChatSessions);
         _htmlTemplateCollection = mongoDbService.GetCollection<HtmlTemplate>(MongoCollections.HtmlTemplates);
         _resumeCollection = mongoDbService.GetCollection<Resume>(MongoCollections.Resume);
-        _ollamaService = ollamaService;
+        _compositeAiService = compositeAiService;
         _groqService = groqService;
         
         // Create indexes for better query performance
@@ -39,8 +39,8 @@ public class ResumeRepository : IResumeRepository
         {
             var stopwatch = Stopwatch.StartNew();
             
-            // Call Ollama to enhance the resume
-            var enhancedResume = await _ollamaService.EnhanceResumeAsync(
+            // Call Composite AI to enhance the resume
+            var enhancedResume = await _compositeAiService.EnhanceResumeAsync(
                 request.ResumeData, 
                 request.EnhancementInstruction
             );
@@ -423,7 +423,7 @@ public class ResumeRepository : IResumeRepository
             // Build context from chat history for AI
             var conversationContext = BuildConversationContextFromHistory(chatHistory, request.Message, originalResume);
 
-            // Call Ollama with conversation context
+            // Call AI with conversation context
             string aiResponse;
             ResumeDto? enhancedResume = null;
             string? enhancedHtml = null;
@@ -434,7 +434,7 @@ public class ResumeRepository : IResumeRepository
                 if (!string.IsNullOrEmpty(originalHtml))
                 {
                     // HTML-based enhancement (for TiptapAngular editor)
-                    var (html, resume) = await _ollamaService.EnhanceResumeHtmlAsync(
+                    var (html, resume) = await _compositeAiService.EnhanceResumeHtmlAsync(
                         originalHtml, 
                         originalResume, 
                         request.Message);
@@ -446,7 +446,7 @@ public class ResumeRepository : IResumeRepository
                 else
                 {
                     // JSON-only enhancement (legacy)
-                    enhancedResume = await _ollamaService.EnhanceResumeAsync(originalResume, conversationContext);
+                    enhancedResume = await _compositeAiService.EnhanceResumeAsync(originalResume, conversationContext);
                     aiResponse = "I've enhanced your resume based on your request. Here's the updated version.";
                 }
             }
@@ -481,7 +481,7 @@ public class ResumeRepository : IResumeRepository
             // Auto-generate title if not yet updated and message is present
             if (!chatSession.IsTitleUpdated && !string.IsNullOrWhiteSpace(request.Message))
             {
-                chatSession.Title = await _ollamaService.GenerateChatTitleAsync(request.Message);
+                chatSession.Title = await _compositeAiService.GenerateChatTitleAsync(request.Message);
                 chatSession.IsTitleUpdated = true;
             }
 
@@ -1082,7 +1082,7 @@ public class ResumeRepository : IResumeRepository
     private Task<string> GetConversationalResponseAsync(string context)
     {
         // For now, return a helpful message
-        // In future, you could call Ollama for conversational AI
+        // In future, you could call an AI model for conversational AI
         return Task.FromResult("I'm ready to help you enhance your resume. Please provide your resume data or ask me any questions about resume writing!");
     }
     public async Task<Resume?> GetMasterResumeAsync(long userId)

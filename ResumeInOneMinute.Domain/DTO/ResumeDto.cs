@@ -37,7 +37,7 @@ public class ExperienceDto
     
     public string To { get; set; } = string.Empty;
     
-    public string Description { get; set; } = string.Empty;
+    public List<string> Description { get; set; } = new();
 }
 
 public class EducationDto

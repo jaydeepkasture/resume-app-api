@@ -3,8 +3,11 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using ResumeInOneMinute.Domain.DTO;
 using ResumeInOneMinute.Domain.Interface;
+using ResumeInOneMinute.Domain.Model;
+
 using System.Security.Claims;
 using ResumeInOneMinute.Controllers.Super;
+
 
 namespace ResumeInOneMinute.Controllers.Resume;
 
@@ -16,21 +19,42 @@ namespace ResumeInOneMinute.Controllers.Resume;
 public class ResumeController : SuperController
 {
     private readonly IResumeRepository _resumeRepository;
+    private readonly IResumeSqlRepository _resumeSqlRepository;
     private readonly IAccountRepository _accountRepository;
     private readonly ISubscriptionService _subscriptionService;
 
-    public ResumeController(IResumeRepository resumeRepository, IAccountRepository accountRepository, ISubscriptionService subscriptionService)
+    public ResumeController(
+        IResumeRepository resumeRepository, 
+        IResumeSqlRepository resumeSqlRepository,
+        IAccountRepository accountRepository, 
+        ISubscriptionService subscriptionService)
     {
         _resumeRepository = resumeRepository;
+        _resumeSqlRepository = resumeSqlRepository;
         _accountRepository = accountRepository;
         _subscriptionService = subscriptionService;
     }
 
+
     #region Chat-Based Enhancement (New - ChatGPT-like)
+
+    /// <summary>
+    /// Get the current user's master resume (from MongoDB storage)
+    /// </summary>
+    [HttpGet]
+    [ProducesResponseType(typeof(Response<ResumeDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Response<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetResumeById()
+    {
+        var userId = GetUserId();
+        var result = await _resumeSqlRepository.GetResumeByIdAsync(userId);
+        return result.Status ? Ok(result) : NotFound(result);
+    }
 
     /// <summary>
     /// Create a new chat session with dummy resume data for the user
     /// </summary>
+
     [HttpPost("chat/create")]
     [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(object), StatusCodes.Status400BadRequest)]
@@ -305,7 +329,7 @@ public class ResumeController : SuperController
     #region Legacy Enhancement (Backward Compatibility)
 
     /// <summary>
-    /// Enhance a resume using AI (Ollama) - Legacy endpoint
+    /// Enhance a resume using AI - Legacy endpoint
     /// </summary>
     /// <param name="request">Resume data and enhancement instructions</param>
     /// <returns>Enhanced resume with history ID</returns>
