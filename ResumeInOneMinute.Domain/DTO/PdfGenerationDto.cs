@@ -2,7 +2,7 @@ namespace ResumeInOneMinute.Domain.DTO;
 
 public class PdfGenerationRequestDto
 {
-    public string ThemeId { get; set; } = string.Empty;
+    public string TemplateId { get; set; } = string.Empty;
     public ResumeDto Resume { get; set; } = new();
 }
 

@@ -28,12 +28,12 @@ public class PdfController : ControllerBase
     [ProducesResponseType(typeof(Response<object>), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GeneratePdf([FromBody] PdfGenerationRequestDto request)
     {
-        if (request == null || string.IsNullOrEmpty(request.ThemeId) || request.Resume == null)
+        if (request == null || string.IsNullOrEmpty(request.TemplateId) || request.Resume == null)
         {
             return BadRequest(new Response<object> 
             { 
                 Status = false, 
-                Message = "Invalid request. ThemeId and Resume data are required." 
+                Message = "Invalid request. TemplateId and Resume data are required." 
             });
         }
 
@@ -49,7 +49,7 @@ public class PdfController : ControllerBase
         }
         catch (Exception ex)
         {
-            if (ex.Message.Contains("Theme not found"))
+            if (ex.Message.Contains("Template not found"))
             {
                 return NotFound(new Response<object> 
                 { 
