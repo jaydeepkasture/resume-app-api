@@ -39,9 +39,6 @@ public class PdfService : IPdfService
         // Replace the placeholder in HTML with the actual JSON string
         string html = cleanHtml.Replace("{{RESUME_JSON_DATA}}", jsonResumeData);
 
-        // DEBUG: Write the HTML to disk so we can see why it fails
-        System.IO.File.WriteAllText("debug.html", html);
-
         try
         {
             var browserFetcher = new BrowserFetcher();
