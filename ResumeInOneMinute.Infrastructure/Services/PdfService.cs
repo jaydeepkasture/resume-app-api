@@ -5,6 +5,7 @@ using PuppeteerSharp.Media;
 using ResumeInOneMinute.Domain.DTO;
 using ResumeInOneMinute.Domain.Interface;
 using Microsoft.Extensions.Logging; // Added this using directive
+using Microsoft.Extensions.Configuration; // Added this using directive
 
 namespace ResumeInOneMinute.Infrastructure.Services;
 
@@ -12,11 +13,13 @@ public class PdfService : IPdfService
 {
     private readonly IHtmlTemplateRepository _templateRepository;
     private readonly ILogger<PdfService> _logger; // Added this field
+    private readonly IConfiguration _configuration;
 
-    public PdfService(IHtmlTemplateRepository templateRepository, ILogger<PdfService> logger) // Modified constructor signature
+    public PdfService(IHtmlTemplateRepository templateRepository, ILogger<PdfService> logger, IConfiguration configuration) // Modified constructor signature
     {
         _templateRepository = templateRepository;
         _logger = logger; // Added this assignment
+        _configuration = configuration;
     }
 
     public async Task<PdfGenerationResponseDto> GenerateResumePdfAsync(PdfGenerationRequestDto request)
@@ -41,10 +44,17 @@ public class PdfService : IPdfService
 
         try
         {
-            var browserFetcher = new BrowserFetcher();
-            await browserFetcher.DownloadAsync();
+            var executablePath = _configuration["PuppeteerSettings:ExecutablePath"];
+            var shouldDownload = !bool.TryParse(_configuration["PuppeteerSettings:DownloadBrowser"], out var download) || download;
+
+            if (string.IsNullOrEmpty(executablePath) && shouldDownload)
+            {
+                _logger.LogInformation("Downloading browser for Puppeteer...");
+                var browserFetcher = new BrowserFetcher();
+                await browserFetcher.DownloadAsync();
+            }
             
-            await using var browser = await Puppeteer.LaunchAsync(new LaunchOptions
+            var launchOptions = new LaunchOptions
             {
                 Headless = true,
                 Args = new[] 
@@ -54,7 +64,15 @@ public class PdfService : IPdfService
                     "--disable-gpu",
                     "--disable-dev-shm-usage"
                 }
-            });
+            };
+
+            if (!string.IsNullOrEmpty(executablePath))
+            {
+                _logger.LogInformation("Using configured Puppeteer executable path: {Path}", executablePath);
+                launchOptions.ExecutablePath = executablePath;
+            }
+
+            await using var browser = await Puppeteer.LaunchAsync(launchOptions);
 
             await using var page = await browser.NewPageAsync();
             
