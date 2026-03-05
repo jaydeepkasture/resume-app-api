@@ -69,8 +69,6 @@ public class PdfService : IPdfService
                     "--disable-dev-shm-usage",
                     "--disable-software-rasterizer",
                     "--disable-extensions",
-                    "--remote-debugging-port=9222",
-                    "--user-data-dir=/tmp/puppeteer_user_data", // Fix for Snap/Permission issues
                     "--disable-crash-reporter" // Fix for chrome_crashpad_handler error
                 }
             };
