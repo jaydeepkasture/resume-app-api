@@ -45,11 +45,15 @@ public class PdfService : IPdfService
         try
         {
             var executablePath = _configuration["PuppeteerSettings:ExecutablePath"];
-            var shouldDownload = !bool.TryParse(_configuration["PuppeteerSettings:DownloadBrowser"], out var download) || download;
+            var downloadConfig = _configuration["PuppeteerSettings:DownloadBrowser"];
+            var shouldDownload = !bool.TryParse(downloadConfig, out var download) || download;
+
+            _logger.LogInformation("Puppeteer Setup - ExecutablePath: '{Path}', DownloadBrowser: {ShouldDownload} (Config Value: '{ConfigValue}')", 
+                executablePath ?? "null", shouldDownload, downloadConfig ?? "null");
 
             if (string.IsNullOrEmpty(executablePath) && shouldDownload)
             {
-                _logger.LogInformation("Downloading browser for Puppeteer...");
+                _logger.LogInformation("No executable path provided and DownloadBrowser is true. Attempting to download browser...");
                 var browserFetcher = new BrowserFetcher();
                 await browserFetcher.DownloadAsync();
             }
@@ -62,14 +66,22 @@ public class PdfService : IPdfService
                     "--no-sandbox", 
                     "--disable-setuid-sandbox",
                     "--disable-gpu",
-                    "--disable-dev-shm-usage"
+                    "--disable-dev-shm-usage",
+                    "--disable-software-rasterizer",
+                    "--disable-extensions",
+                    "--remote-debugging-port=9222",
+                    "--user-data-dir=/tmp/puppeteer_user_data" // Fix for Snap/Permission issues
                 }
             };
 
             if (!string.IsNullOrEmpty(executablePath))
             {
-                _logger.LogInformation("Using configured Puppeteer executable path: {Path}", executablePath);
+                _logger.LogInformation("Launching Puppeteer with configured path: {Path}", executablePath);
                 launchOptions.ExecutablePath = executablePath;
+            }
+            else
+            {
+                _logger.LogInformation("Launching Puppeteer with default browser (expecting it to be downloaded or in PATH)");
             }
 
             await using var browser = await Puppeteer.LaunchAsync(launchOptions);
