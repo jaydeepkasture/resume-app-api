@@ -70,9 +70,13 @@ public class PdfService : IPdfService
                     "--disable-software-rasterizer",
                     "--disable-extensions",
                     "--remote-debugging-port=9222",
-                    "--user-data-dir=/tmp/puppeteer_user_data" // Fix for Snap/Permission issues
+                    "--user-data-dir=/tmp/puppeteer_user_data", // Fix for Snap/Permission issues
+                    "--disable-crash-reporter" // Fix for chrome_crashpad_handler error
                 }
             };
+            
+            // Fix for mkdir: cannot create directory '/var/www/.local': Permission denied
+            launchOptions.Env["HOME"] = "/tmp";
 
             if (!string.IsNullOrEmpty(executablePath))
             {
