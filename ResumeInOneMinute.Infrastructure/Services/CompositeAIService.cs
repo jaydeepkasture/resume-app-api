@@ -251,6 +251,7 @@ CRITICAL INSTRUCTIONS:
 6. Use action verbs and quantifiable achievements.
 7. Maintain EXACT JSON structure and field names (case-sensitive).
 8. Experience MUST be in reverse chronological order (most recent at index 0).
+9. Experience Description MUST be a list of strings (bullet points).
 
 OUTPUT FORMAT:
 Return ONLY raw JSON object. NO markdown code blocks, NO text before/after.
@@ -270,7 +271,7 @@ Return ONLY raw JSON object. NO markdown code blocks, NO text before/after.
       ""position"": ""string"",
       ""from"": ""string"",
       ""to"": ""string"",
-      ""description"": ""string""
+      ""description"": [""string""]
     }}
   ],
   ""skills"": [""string""],

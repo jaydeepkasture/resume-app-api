@@ -138,7 +138,7 @@ CRITICAL INSTRUCTIONS:
 7. Use action verbs, quantifiable achievements, and industry-standard terminology.
 8. Maintain the EXACT same JSON structure as the input.
 9. Ensure all field names match exactly (case-sensitive): name, role, phoneno, email, location, linkedin, github, summary, experience, skills, education.
-10. For experience array, use: company, position, from, to, description
+10. For experience array, use: company, position, from, to, description (description MUST be a list of strings)
 11. For education array, use: degree, field, institution, year
 12. EXPERIENCE ORDER: You MUST maintain strict reverse chronological order for the 'experience' array. The most recent or current job MUST be at index 0. The oldest (first) job MUST be at the last index.
 13. EDUCATION YEAR LOGIC: If the job description requires specific education and you are adding or inferring graduation years, set the graduation year to be the same as the start year of the candidate's very first job (the oldest entry in their experience history).
@@ -188,7 +188,7 @@ Return ONLY a valid JSON object with the EXACT structure shown below.
       ""position"": ""string"",
       ""from"": ""string"",
       ""to"": ""string"",
-      ""description"": ""string""
+      ""description"": [""string""]
     }}
   ],
   ""skills"": [""string""],

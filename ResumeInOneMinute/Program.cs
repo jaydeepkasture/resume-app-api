@@ -136,6 +136,7 @@ builder.Services.AddScoped<IContactRepository, ContactRepository>();
 // Register Services
 builder.Services.AddScoped<IRazorpayService, ResumeInOneMinute.Infrastructure.Services.RazorpayService>();
 builder.Services.AddScoped<ISubscriptionService, ResumeInOneMinute.Infrastructure.Services.SubscriptionService>();
+builder.Services.AddScoped<IPdfService, ResumeInOneMinute.Infrastructure.Services.PdfService>();
 
 // Configure MongoDB Settings
 // Handled by MongoDbService via IConfiguration

@@ -103,7 +103,7 @@ SOURCE CONTENT:
 INSTRUCTIONS:
 1. Extract the candidate's name, role (current or target), contact info, location.
 2. Extract Summary/Profile.
-3. Extract Experience: Company, Position, Dates (From/To), Description. Use reverse chronological order.
+3. Extract Experience: Company, Position, Dates (From/To), Description. Use reverse chronological order. Description MUST be a list of strings (bullet points).
 4. Extract Education: Degree, Field, Institution, Year.
 5. Extract Skills as a list of strings.
 6. Return VALID JSON only.
@@ -124,7 +124,7 @@ REQUIRED JSON FORMAT:
       ""position"": ""string"",
       ""from"": ""string"",
       ""to"": ""string"",
-      ""description"": ""string""
+      ""description"": [""string""]
     }}
   ],
   ""skills"": [""string""],

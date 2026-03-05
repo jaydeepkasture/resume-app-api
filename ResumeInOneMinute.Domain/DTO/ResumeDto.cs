@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace ResumeInOneMinute.Domain.DTO;
 
@@ -37,7 +38,8 @@ public class ExperienceDto
     
     public string To { get; set; } = string.Empty;
     
-    public string Description { get; set; } = string.Empty;
+    [JsonConverter(typeof(StringToListConverter))]
+    public List<string> Description { get; set; } = new();
 }
 
 public class EducationDto
